@@ -57,15 +57,21 @@ export class ProcessManager {
     this.procs.set(id, child)
     this.emitStatus(id, 'running')
 
+    const finalize = (logText: string): void => {
+      if (!this.procs.has(id)) return
+      this.procs.delete(id)
+      this.emitLog(id, logText, 'stdout')
+      this.emitStatus(id, 'stopped')
+    }
+
     child.stdout?.on('data', (d: Buffer) => this.emitLog(id, d.toString(), 'stdout'))
     child.stderr?.on('data', (d: Buffer) => this.emitLog(id, d.toString(), 'stderr'))
     child.on('error', (err) => {
       this.emitLog(id, `[erro ao iniciar processo] ${err.message}`, 'stderr')
+      finalize('[processo não iniciou]')
     })
     child.on('exit', (code) => {
-      this.procs.delete(id)
-      this.emitLog(id, `[processo encerrado, código ${code ?? 'desconhecido'}]`, 'stdout')
-      this.emitStatus(id, 'stopped')
+      finalize(`[processo encerrado, código ${code ?? 'desconhecido'}]`)
     })
   }
 
