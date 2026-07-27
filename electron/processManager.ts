@@ -80,7 +80,10 @@ export class ProcessManager {
     if (!child || child.pid === undefined) return
     if (process.platform === 'win32') {
       // shell:true wraps the command in cmd.exe — kill the whole tree
-      spawn('taskkill', ['/pid', String(child.pid), '/T', '/F'])
+      const killer = spawn('taskkill', ['/pid', String(child.pid), '/T', '/F'])
+      killer.on('error', (err) => {
+        this.emitLog(id, `[falha ao encerrar processo] ${err.message}`, 'stderr')
+      })
     } else {
       child.kill('SIGTERM')
     }
