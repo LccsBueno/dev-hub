@@ -3,6 +3,7 @@ import Sidebar, { type View } from './components/Sidebar'
 import SearchBar from './components/SearchBar'
 import ProjectGrid from './components/ProjectGrid'
 import LogDrawer from './components/LogDrawer'
+import SettingsPanel from './components/SettingsPanel'
 import { ToastProvider } from './components/Toast'
 import { useProjects } from './hooks/useProjects'
 import { useProcessStatus } from './hooks/useProcessStatus'
@@ -13,7 +14,7 @@ export default function App() {
   const [search, setSearch] = useState('')
   const [stackFilter, setStackFilter] = useState<Stack | 'all'>('all')
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const { config, rescan, updateProjectCommand, updateRootFolders, updateEditorCommand } =
+  const { config, scanning, rescan, updateProjectCommand, updateRootFolders, updateEditorCommand } =
     useProjects()
   const running = useProcessStatus()
 
@@ -48,7 +49,18 @@ export default function App() {
                 />
               </>
             ) : (
-              <h1 className="text-2xl font-semibold">Configurações</h1>
+              <>
+                <h1 className="mb-6 text-2xl font-semibold">Configurações</h1>
+                {config && (
+                  <SettingsPanel
+                    config={config}
+                    scanning={scanning}
+                    onUpdateRoots={updateRootFolders}
+                    onUpdateEditor={updateEditorCommand}
+                    onRescan={rescan}
+                  />
+                )}
+              </>
             )}
           </main>
           {selectedId && config?.projects[selectedId] && (
