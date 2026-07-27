@@ -17,9 +17,12 @@ export default function LogDrawer({ projectId, projectName, projectPath, onClose
   const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    let cancelled = false
     setLines([])
-    window.api.getLogBuffer(projectId).then(setLines)
-    return window.api.onLog((id, chunk, stream) => {
+    window.api.getLogBuffer(projectId).then((buffer) => {
+      if (!cancelled) setLines(buffer)
+    })
+    const off = window.api.onLog((id, chunk, stream) => {
       if (id !== projectId) return
       const newLines: LogLine[] = chunk
         .split(/\r?\n/)
@@ -27,6 +30,10 @@ export default function LogDrawer({ projectId, projectName, projectPath, onClose
         .map((text) => ({ text, stream }))
       setLines((current) => [...current, ...newLines].slice(-MAX_CLIENT_LINES))
     })
+    return () => {
+      cancelled = true
+      off()
+    }
   }, [projectId])
 
   useEffect(() => {
