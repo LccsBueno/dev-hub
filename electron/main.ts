@@ -12,8 +12,12 @@ let win: BrowserWindow | null = null
 
 const configPath = (): string => join(app.getPath('userData'), 'config.json')
 
+function sendToRenderer(channel: string, ...args: unknown[]): void {
+  if (win && !win.isDestroyed()) win.webContents.send(channel, ...args)
+}
+
 function sendError(message: string): void {
-  win?.webContents.send('app:error', message)
+  sendToRenderer('app:error', message)
 }
 
 function doScan(): Config {
@@ -37,6 +41,11 @@ function createWindow(): void {
       nodeIntegration: false
     }
   })
+
+  win.on('closed', () => {
+    win = null
+  })
+  win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
 
   if (!app.isPackaged && process.env['ELECTRON_RENDERER_URL']) {
     win.loadURL(process.env['ELECTRON_RENDERER_URL'])
@@ -88,7 +97,7 @@ function registerIpc(): void {
     const cfg = loadConfig(configPath())
     const project = cfg.projects[id]
     if (!project) return
-    if (!project.runCommand.trim()) {
+    if (typeof project.runCommand !== 'string' || !project.runCommand.trim()) {
       sendError(`"${project.name}" não tem comando de run configurado.`)
       return
     }
@@ -105,7 +114,7 @@ function registerIpc(): void {
 
   ipcMain.on('open:editor', (_e, path: string) => {
     const cfg = loadConfig(configPath())
-    const child = spawn(cfg.editorCommand, [path], { shell: true, stdio: 'ignore' })
+    const child = spawn(cfg.editorCommand, [`"${path}"`], { shell: true, stdio: 'ignore' })
     child.on('exit', (code) => {
       if (code !== 0) sendError(`"${cfg.editorCommand}" não encontrado no PATH.`)
     })
@@ -113,27 +122,25 @@ function registerIpc(): void {
   })
 
   ipcMain.on('open:terminal', (_e, path: string) => {
-    const wt = spawn('wt', ['-d', path], { shell: true, stdio: 'ignore' })
-    wt.on('exit', (code) => {
-      if (code !== 0) {
-        spawn('cmd', ['/c', 'start', 'cmd', '/k', `cd /d "${path}"`], {
-          shell: false,
-          detached: true,
-          stdio: 'ignore'
-        }).unref()
-      }
-    })
-    wt.on('error', () => {
-      spawn('cmd', ['/c', 'start', 'cmd', '/k', `cd /d "${path}"`], {
+    const wt = spawn('wt', ['-d', `"${path}"`], { shell: true, stdio: 'ignore' })
+    let fellBack = false
+    const fallback = (): void => {
+      if (fellBack) return
+      fellBack = true
+      spawn('cmd', ['/c', 'start', 'cmd', '/k', 'cd', '/d', path], {
         shell: false,
         detached: true,
         stdio: 'ignore'
       }).unref()
+    }
+    wt.on('exit', (code) => {
+      if (code !== 0) fallback()
     })
+    wt.on('error', fallback)
   })
 
-  pm.onLog((id, chunk, stream) => win?.webContents.send('process:log', id, chunk, stream))
-  pm.onStatus((id, status) => win?.webContents.send('process:status', id, status))
+  pm.onLog((id, chunk, stream) => sendToRenderer('process:log', id, chunk, stream))
+  pm.onStatus((id, status) => sendToRenderer('process:status', id, status))
 }
 
 app.whenReady().then(() => {
