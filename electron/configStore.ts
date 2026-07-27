@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync, mkdirSync } from 'fs'
 import { dirname } from 'path'
-import type { Config } from '../src/types'
+import type { Config, ProjectConfig, ScannedProject } from '../src/types'
 
 export function defaultConfig(): Config {
   return { rootFolders: [], editorCommand: 'code', projects: {} }
@@ -20,7 +20,8 @@ export function loadConfig(filePath: string): Config {
           ? parsed.projects
           : {}
     }
-  } catch {
+  } catch (err) {
+    console.error('[configStore] failed to load config, using defaults:', err)
     return defaultConfig()
   }
 }
@@ -28,4 +29,37 @@ export function loadConfig(filePath: string): Config {
 export function saveConfig(filePath: string, config: Config): void {
   mkdirSync(dirname(filePath), { recursive: true })
   writeFileSync(filePath, JSON.stringify(config, null, 2), 'utf-8')
+}
+
+export function mergeProjects(
+  existing: Record<string, ProjectConfig>,
+  scanned: ScannedProject[]
+): Record<string, ProjectConfig> {
+  const merged: Record<string, ProjectConfig> = {}
+  const scannedIds = new Set(scanned.map((s) => s.id))
+
+  for (const s of scanned) {
+    const prev = existing[s.id]
+    if (prev) {
+      merged[s.id] = { ...prev, name: s.name, path: s.path, stack: s.stack, missing: false }
+    } else {
+      merged[s.id] = {
+        name: s.name,
+        path: s.path,
+        stack: s.stack,
+        runCommand: s.suggestedCommand,
+        pinned: false,
+        hidden: false,
+        missing: false
+      }
+    }
+  }
+
+  for (const [id, p] of Object.entries(existing)) {
+    if (!scannedIds.has(id)) {
+      merged[id] = { ...p, missing: true }
+    }
+  }
+
+  return merged
 }
