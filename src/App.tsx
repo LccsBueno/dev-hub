@@ -1,13 +1,28 @@
 import { useState } from 'react'
 import Sidebar, { type View } from './components/Sidebar'
+import SearchBar from './components/SearchBar'
+import ProjectGrid from './components/ProjectGrid'
 import { ToastProvider } from './components/Toast'
 import { useProjects } from './hooks/useProjects'
 import { useProcessStatus } from './hooks/useProcessStatus'
+import type { Stack } from './types'
 
 export default function App() {
   const [view, setView] = useState<View>('projects')
-  const projects = useProjects()
+  const [search, setSearch] = useState('')
+  const [stackFilter, setStackFilter] = useState<Stack | 'all'>('all')
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const { config, rescan, updateProjectCommand, updateRootFolders, updateEditorCommand } =
+    useProjects()
   const running = useProcessStatus()
+
+  const filtered = Object.fromEntries(
+    Object.entries(config?.projects ?? {}).filter(
+      ([, p]) =>
+        p.name.toLowerCase().includes(search.toLowerCase()) &&
+        (stackFilter === 'all' || p.stack === stackFilter)
+    )
+  )
 
   return (
     <ToastProvider>
@@ -15,14 +30,21 @@ export default function App() {
         <Sidebar view={view} onChange={setView} />
         <main className="flex-1 overflow-y-auto p-8">
           {view === 'projects' ? (
-            <div>
-              <h1 className="text-2xl font-semibold">Projetos</h1>
-              <p className="mt-2 text-sm text-muted">
-                {projects.config
-                  ? `${Object.keys(projects.config.projects).length} projetos, ${Object.keys(running).length} rodando`
-                  : 'Carregando…'}
-              </p>
-            </div>
+            <>
+              <h1 className="mb-6 text-2xl font-semibold">Projetos</h1>
+              <SearchBar
+                search={search}
+                onSearch={setSearch}
+                stackFilter={stackFilter}
+                onStackFilter={setStackFilter}
+              />
+              <ProjectGrid
+                projects={filtered}
+                running={running}
+                onSelect={setSelectedId}
+                onCommandChange={updateProjectCommand}
+              />
+            </>
           ) : (
             <h1 className="text-2xl font-semibold">Configurações</h1>
           )}
