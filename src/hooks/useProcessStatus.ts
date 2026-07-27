@@ -5,14 +5,9 @@ export function useProcessStatus(): Record<string, number> {
   const [running, setRunning] = useState<Record<string, number>>({})
 
   useEffect(() => {
-    window.api.getRunningIds().then((ids) => {
-      setRunning((prev) => {
-        const next = { ...prev }
-        for (const id of ids) if (!(id in next)) next[id] = Date.now()
-        return next
-      })
-    })
-    return window.api.onStatusChange((id, status) => {
+    const eventSeen = new Set<string>()
+    const off = window.api.onStatusChange((id, status) => {
+      eventSeen.add(id)
       setRunning((prev) => {
         const next = { ...prev }
         if (status === 'running') next[id] = Date.now()
@@ -20,6 +15,14 @@ export function useProcessStatus(): Record<string, number> {
         return next
       })
     })
+    window.api.getRunningIds().then((ids) => {
+      setRunning((prev) => {
+        const next = { ...prev }
+        for (const id of ids) if (!(id in next) && !eventSeen.has(id)) next[id] = Date.now()
+        return next
+      })
+    })
+    return off
   }, [])
 
   return running
