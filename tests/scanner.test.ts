@@ -40,6 +40,20 @@ describe('detectStack', () => {
     expect(detectStack(dir)).toEqual({ stack: 'node', suggestedCommand: 'npm start' })
   })
 
+  it('prefers the exact dev script over other dev-ish scripts', () => {
+    const dir = makeProject('exact', {
+      'package.json': JSON.stringify({ scripts: { 'build:dev': 'x', dev: 'vite' } })
+    })
+    expect(detectStack(dir)).toEqual({ stack: 'node', suggestedCommand: 'npm run dev' })
+  })
+
+  it('ignores pre/post hook scripts when picking a dev script', () => {
+    const dir = makeProject('hooks', {
+      'package.json': JSON.stringify({ scripts: { predev: 'x', start: 'node .' } })
+    })
+    expect(detectStack(dir)).toEqual({ stack: 'node', suggestedCommand: 'npm start' })
+  })
+
   it('detects maven', () => {
     const dir = makeProject('spring', { 'pom.xml': '<project/>' })
     expect(detectStack(dir)).toEqual({ stack: 'maven', suggestedCommand: 'mvn spring-boot:run' })

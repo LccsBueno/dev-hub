@@ -16,7 +16,10 @@ function detectNodeCommand(dir: string): string {
   try {
     const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf-8'))
     const scripts: Record<string, string> = pkg.scripts ?? {}
-    const devScript = Object.keys(scripts).find((name) => name.includes('dev'))
+    if (scripts['dev']) return 'npm run dev'
+    const devScript = Object.keys(scripts).find(
+      (name) => name.includes('dev') && !name.startsWith('pre') && !name.startsWith('post')
+    )
     if (devScript) return `npm run ${devScript}`
   } catch {
     // unreadable package.json — fall through to default
