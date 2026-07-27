@@ -37,6 +37,7 @@ export default function ProjectCard({ id, project, runningSince, onSelect, onCom
 
   useEffect(() => {
     if (!running) return
+    setNow(Date.now())
     const timer = setInterval(() => setNow(Date.now()), 30000)
     return () => clearInterval(timer)
   }, [running])
