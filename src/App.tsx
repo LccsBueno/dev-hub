@@ -2,6 +2,7 @@ import { useState } from 'react'
 import Sidebar, { type View } from './components/Sidebar'
 import SearchBar from './components/SearchBar'
 import ProjectGrid from './components/ProjectGrid'
+import LogDrawer from './components/LogDrawer'
 import { ToastProvider } from './components/Toast'
 import { useProjects } from './hooks/useProjects'
 import { useProcessStatus } from './hooks/useProcessStatus'
@@ -28,27 +29,37 @@ export default function App() {
     <ToastProvider>
       <div className="flex h-screen bg-bg text-white">
         <Sidebar view={view} onChange={setView} />
-        <main className="flex-1 overflow-y-auto p-8">
-          {view === 'projects' ? (
-            <>
-              <h1 className="mb-6 text-2xl font-semibold">Projetos</h1>
-              <SearchBar
-                search={search}
-                onSearch={setSearch}
-                stackFilter={stackFilter}
-                onStackFilter={setStackFilter}
-              />
-              <ProjectGrid
-                projects={filtered}
-                running={running}
-                onSelect={setSelectedId}
-                onCommandChange={updateProjectCommand}
-              />
-            </>
-          ) : (
-            <h1 className="text-2xl font-semibold">Configurações</h1>
+        <div className="relative flex flex-1 flex-col overflow-hidden">
+          <main className="flex-1 overflow-y-auto p-8">
+            {view === 'projects' ? (
+              <>
+                <h1 className="mb-6 text-2xl font-semibold">Projetos</h1>
+                <SearchBar
+                  search={search}
+                  onSearch={setSearch}
+                  stackFilter={stackFilter}
+                  onStackFilter={setStackFilter}
+                />
+                <ProjectGrid
+                  projects={filtered}
+                  running={running}
+                  onSelect={setSelectedId}
+                  onCommandChange={updateProjectCommand}
+                />
+              </>
+            ) : (
+              <h1 className="text-2xl font-semibold">Configurações</h1>
+            )}
+          </main>
+          {selectedId && config?.projects[selectedId] && (
+            <LogDrawer
+              projectId={selectedId}
+              projectName={config.projects[selectedId].name}
+              projectPath={config.projects[selectedId].path}
+              onClose={() => setSelectedId(null)}
+            />
           )}
-        </main>
+        </div>
       </div>
     </ToastProvider>
   )
