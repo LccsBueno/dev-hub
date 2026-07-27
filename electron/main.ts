@@ -20,6 +20,11 @@ function sendError(message: string): void {
   sendToRenderer('app:error', message)
 }
 
+function isKnownProjectPath(path: string): boolean {
+  const cfg = loadConfig(configPath())
+  return Object.values(cfg.projects).some((p) => p.path === path)
+}
+
 function doScan(): Config {
   const cfg = loadConfig(configPath())
   const scanned = scanRoots(cfg.rootFolders)
@@ -109,10 +114,12 @@ function registerIpc(): void {
   ipcMain.on('process:stop', (_e, id: string) => pm.stop(id))
 
   ipcMain.on('open:folder', (_e, path: string) => {
+    if (!isKnownProjectPath(path)) return
     shell.openPath(path)
   })
 
   ipcMain.on('open:editor', (_e, path: string) => {
+    if (!isKnownProjectPath(path)) return
     const cfg = loadConfig(configPath())
     const child = spawn(cfg.editorCommand, [`"${path}"`], { shell: true, stdio: 'ignore' })
     child.on('exit', (code) => {
@@ -122,13 +129,14 @@ function registerIpc(): void {
   })
 
   ipcMain.on('open:terminal', (_e, path: string) => {
+    if (!isKnownProjectPath(path)) return
     const wt = spawn('wt', ['-d', `"${path}"`], { shell: true, stdio: 'ignore' })
     let fellBack = false
     const fallback = (): void => {
       if (fellBack) return
       fellBack = true
-      spawn('cmd', ['/c', 'start', 'cmd', '/k', 'cd', '/d', path], {
-        shell: false,
+      spawn('cmd', ['/c', 'start', 'cmd', '/k'], {
+        cwd: path,
         detached: true,
         stdio: 'ignore'
       }).unref()
