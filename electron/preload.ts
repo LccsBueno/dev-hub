@@ -7,6 +7,9 @@ const api = {
   updateEditorCommand: (command: string) => ipcRenderer.invoke('config:updateEditor', command),
   updateProjectCommand: (id: string, command: string) =>
     ipcRenderer.invoke('config:updateProjectCommand', id, command),
+  updateTags: (id: string, tags: string[]) => ipcRenderer.invoke('config:updateTags', id, tags),
+  updateNotes: (id: string, notes: string) => ipcRenderer.invoke('config:updateNotes', id, notes),
+  getGitInfo: (path: string) => ipcRenderer.invoke('git:info', path),
   checkRootFolders: () => ipcRenderer.invoke('config:checkRoots'),
   pickFolder: () => ipcRenderer.invoke('dialog:pickFolder'),
   getLogBuffer: (id: string) => ipcRenderer.invoke('process:logBuffer', id),

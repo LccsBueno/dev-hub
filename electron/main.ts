@@ -5,6 +5,7 @@ import { spawn } from 'child_process'
 import { loadConfig, saveConfig, mergeProjects } from './configStore'
 import { scanRoots } from './scanner'
 import { ProcessManager } from './processManager'
+import { getGitInfo } from './gitInfo'
 import type { Config } from '../src/types'
 
 const pm = new ProcessManager()
@@ -81,6 +82,27 @@ function registerIpc(): void {
     if (!project) return
     project.runCommand = command
     saveConfig(configPath(), cfg)
+  })
+
+  ipcMain.handle('config:updateTags', (_e, id: string, tags: string[]) => {
+    const cfg = loadConfig(configPath())
+    const project = cfg.projects[id]
+    if (!project) return
+    project.tags = tags
+    saveConfig(configPath(), cfg)
+  })
+
+  ipcMain.handle('config:updateNotes', (_e, id: string, notes: string) => {
+    const cfg = loadConfig(configPath())
+    const project = cfg.projects[id]
+    if (!project) return
+    project.notes = notes
+    saveConfig(configPath(), cfg)
+  })
+
+  ipcMain.handle('git:info', (_e, path: string) => {
+    if (!isKnownProjectPath(path)) return { isRepo: false, currentBranch: null, branches: [], commits: [] }
+    return getGitInfo(path)
   })
 
   ipcMain.handle('config:checkRoots', () => {

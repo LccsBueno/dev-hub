@@ -23,6 +23,16 @@ export function useProjects() {
     setConfig(await window.api.getConfig())
   }, [])
 
+  const updateTags = useCallback(async (id: string, tags: string[]) => {
+    await window.api.updateTags(id, tags)
+    setConfig(await window.api.getConfig())
+  }, [])
+
+  const updateNotes = useCallback(async (id: string, notes: string) => {
+    await window.api.updateNotes(id, notes)
+    setConfig(await window.api.getConfig())
+  }, [])
+
   const updateRootFolders = useCallback(
     async (folders: string[]) => {
       await window.api.updateRootFolders(folders)
@@ -36,5 +46,14 @@ export function useProjects() {
     setConfig(await window.api.getConfig())
   }, [])
 
-  return { config, scanning, rescan, updateProjectCommand, updateRootFolders, updateEditorCommand }
+  return {
+    config,
+    scanning,
+    rescan,
+    updateProjectCommand,
+    updateTags,
+    updateNotes,
+    updateRootFolders,
+    updateEditorCommand
+  }
 }

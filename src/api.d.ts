@@ -1,4 +1,4 @@
-import type { Config, LogLine, RootFolderStatus } from './types'
+import type { Config, GitInfo, LogLine, RootFolderStatus } from './types'
 
 declare global {
   interface Window {
@@ -8,6 +8,9 @@ declare global {
       updateRootFolders(folders: string[]): Promise<void>
       updateEditorCommand(command: string): Promise<void>
       updateProjectCommand(id: string, command: string): Promise<void>
+      updateTags(id: string, tags: string[]): Promise<void>
+      updateNotes(id: string, notes: string): Promise<void>
+      getGitInfo(path: string): Promise<GitInfo>
       checkRootFolders(): Promise<RootFolderStatus[]>
       pickFolder(): Promise<string | null>
       getLogBuffer(id: string): Promise<LogLine[]>
