@@ -6,7 +6,7 @@ import { loadConfig, saveConfig, mergeProjects } from './configStore'
 import { scanRoots } from './scanner'
 import { ProcessManager } from './processManager'
 import { getGitInfo, emptyGitInfo } from './gitInfo'
-import { stopContainer } from './docker'
+import { armStopFallback, clearStopFallback, stopContainer } from './docker'
 import { dockerContainerName, dockerRunCommand } from '../src/lib/dockerCommand'
 import type { Config, RunMode } from '../src/types'
 
@@ -112,7 +112,10 @@ function registerIpc(): void {
     const cfg = loadConfig(configPath())
     const project = cfg.projects[id]
     if (!project) return
-    if (runMode === 'docker' && !project.hasDockerfile) return
+    if (runMode === 'docker' && !project.hasDockerfile) {
+      sendError(`"${project.name}" não tem Dockerfile — não é possível ativar o modo Docker.`)
+      return
+    }
     project.runMode = runMode
     saveConfig(configPath(), cfg)
   })
@@ -141,6 +144,7 @@ function registerIpc(): void {
     const cfg = loadConfig(configPath())
     const project = cfg.projects[id]
     if (!project) return
+    clearStopFallback(id)
 
     if (project.runMode === 'docker') {
       project.lastRunAt = new Date().toISOString()
@@ -163,9 +167,16 @@ function registerIpc(): void {
     const project = cfg.projects[id]
     if (project?.runMode === 'docker') {
       stopContainer(dockerContainerName(id))
-      setTimeout(() => {
-        if (pm.isRunning(id)) pm.stop(id)
-      }, 12000)
+      armStopFallback(
+        id,
+        () => {
+          if (pm.isRunning(id)) {
+            stopContainer(dockerContainerName(id))
+            pm.stop(id)
+          }
+        },
+        15000
+      )
       return
     }
     pm.stop(id)
@@ -214,5 +225,13 @@ app.whenReady().then(() => {
   createWindow()
 })
 
-app.on('before-quit', () => pm.stopAll())
+app.on('before-quit', () => {
+  const cfg = loadConfig(configPath())
+  for (const id of pm.runningIds()) {
+    if (cfg.projects[id]?.runMode === 'docker') {
+      stopContainer(dockerContainerName(id))
+    }
+  }
+  pm.stopAll()
+})
 app.on('window-all-closed', () => app.quit())
