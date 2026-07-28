@@ -44,31 +44,49 @@ export function detectStack(dir: string): Detection | null {
   return null
 }
 
+function scanEntry(dir: string): ScannedProject | null {
+  const detection = detectStack(dir)
+  if (!detection) return null
+  return {
+    id: projectId(dir),
+    name: basename(dir),
+    path: dir,
+    stack: detection.stack,
+    suggestedCommand: detection.suggestedCommand
+  }
+}
+
+function listSubdirs(parent: string): string[] {
+  let entries: string[]
+  try {
+    entries = readdirSync(parent)
+  } catch {
+    return []
+  }
+  return entries
+    .map((entry) => join(parent, entry))
+    .filter((dir) => {
+      try {
+        return statSync(dir).isDirectory()
+      } catch {
+        return false
+      }
+    })
+}
+
 export function scanRoots(roots: string[]): ScannedProject[] {
   const results: ScannedProject[] = []
   for (const rootFolder of roots) {
-    let entries: string[]
-    try {
-      entries = readdirSync(rootFolder)
-    } catch {
-      continue
-    }
-    for (const entry of entries) {
-      const dir = join(rootFolder, entry)
-      try {
-        if (!statSync(dir).isDirectory()) continue
-      } catch {
+    for (const dir of listSubdirs(rootFolder)) {
+      const project = scanEntry(dir)
+      if (project) {
+        results.push(project)
         continue
       }
-      const detection = detectStack(dir)
-      if (!detection) continue
-      results.push({
-        id: projectId(dir),
-        name: basename(dir),
-        path: dir,
-        stack: detection.stack,
-        suggestedCommand: detection.suggestedCommand
-      })
+      for (const nested of listSubdirs(dir)) {
+        const nestedProject = scanEntry(nested)
+        if (nestedProject) results.push(nestedProject)
+      }
     }
   }
   return results

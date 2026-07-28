@@ -123,4 +123,29 @@ describe('scanRoots', () => {
     expect(p.id).toBe(projectId(dir))
     expect(p.id).toMatch(/^[a-f0-9]{12}$/)
   })
+
+  it('discovers projects nested one level inside a marker-less container folder', () => {
+    const containerDir = join(root, 'bot')
+    mkdirSync(containerDir, { recursive: true })
+    const child1 = join(containerDir, 'insta-bot')
+    mkdirSync(child1, { recursive: true })
+    writeFileSync(join(child1, 'package.json'), '{}', 'utf-8')
+    const child2 = join(containerDir, 'no-marker-here')
+    mkdirSync(child2, { recursive: true })
+
+    const projects = scanRoots([root])
+    expect(projects).toHaveLength(1)
+    expect(projects[0].name).toBe('insta-bot')
+    expect(projects[0].path).toBe(child1)
+  })
+
+  it('does not scan into the children of a directory that is itself a project', () => {
+    const projectDir = makeProject('monorepo', { 'package.json': '{}' })
+    mkdirSync(join(projectDir, 'packages', 'internal-lib'), { recursive: true })
+    writeFileSync(join(projectDir, 'packages', 'internal-lib', 'package.json'), '{}', 'utf-8')
+
+    const projects = scanRoots([root])
+    expect(projects).toHaveLength(1)
+    expect(projects[0].name).toBe('monorepo')
+  })
 })
