@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Code2, Folder, Play, Square } from 'lucide-react'
+import { Code2, Container, Folder, Play, Square } from 'lucide-react'
 import type { ProjectConfig, Stack } from '../types'
 import { usePressAnimation } from '../lib/motion'
 
@@ -59,9 +59,16 @@ export default function ProjectCard({ id, project, runningSince, onSelect, onCom
     >
       <div className="mb-1 flex items-center justify-between gap-2">
         <h3 className="truncate font-medium">{project.name}</h3>
-        <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs ${stackColors[project.stack]}`}>
-          {project.stack}
-        </span>
+        <div className="flex shrink-0 items-center gap-1">
+          {project.runMode === 'docker' && (
+            <span title="Modo Docker" className="rounded-full bg-blue-500/15 p-1 text-blue-400">
+              <Container size={12} />
+            </span>
+          )}
+          <span className={`rounded-full px-2 py-0.5 text-xs ${stackColors[project.stack]}`}>
+            {project.stack}
+          </span>
+        </div>
       </div>
 
       <div className="mb-3 flex items-center gap-2 text-xs text-muted">
@@ -84,15 +91,21 @@ export default function ProjectCard({ id, project, runningSince, onSelect, onCom
         </div>
       )}
 
-      <input
-        value={command}
-        onChange={(e) => setCommand(e.target.value)}
-        onBlur={saveCommand}
-        onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
-        onClick={(e) => e.stopPropagation()}
-        placeholder="comando de run…"
-        className="mb-4 w-full rounded-md border border-border bg-bg px-2 py-1.5 font-mono text-xs text-muted outline-none focus:border-accent focus:text-white focus-visible:ring-2 focus-visible:ring-accent/50"
-      />
+      {project.runMode === 'docker' ? (
+        <p className="mb-4 truncate rounded-md border border-border bg-bg px-2 py-1.5 font-mono text-xs text-muted">
+          docker build && run
+        </p>
+      ) : (
+        <input
+          value={command}
+          onChange={(e) => setCommand(e.target.value)}
+          onBlur={saveCommand}
+          onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+          onClick={(e) => e.stopPropagation()}
+          placeholder="comando de run…"
+          className="mb-4 w-full rounded-md border border-border bg-bg px-2 py-1.5 font-mono text-xs text-muted outline-none focus:border-accent focus:text-white focus-visible:ring-2 focus-visible:ring-accent/50"
+        />
+      )}
 
       <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
         <button
