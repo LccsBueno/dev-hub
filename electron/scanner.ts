@@ -52,7 +52,8 @@ function scanEntry(dir: string): ScannedProject | null {
     name: basename(dir),
     path: dir,
     stack: detection.stack,
-    suggestedCommand: detection.suggestedCommand
+    suggestedCommand: detection.suggestedCommand,
+    hasDockerfile: existsSync(join(dir, 'Dockerfile'))
   }
 }
 

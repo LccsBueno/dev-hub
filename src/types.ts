@@ -33,6 +33,7 @@ export interface ScannedProject {
   path: string
   stack: Stack
   suggestedCommand: string
+  hasDockerfile: boolean
 }
 
 export type ProcessStatus = 'running' | 'stopped'

@@ -148,4 +148,16 @@ describe('scanRoots', () => {
     expect(projects).toHaveLength(1)
     expect(projects[0].name).toBe('monorepo')
   })
+
+  it('flags hasDockerfile true when a Dockerfile is present', () => {
+    makeProject('containerized', { 'package.json': '{}', Dockerfile: 'FROM node' })
+    const [p] = scanRoots([root])
+    expect(p.hasDockerfile).toBe(true)
+  })
+
+  it('flags hasDockerfile false when no Dockerfile is present', () => {
+    makeProject('plain', { 'package.json': '{}' })
+    const [p] = scanRoots([root])
+    expect(p.hasDockerfile).toBe(false)
+  })
 })
