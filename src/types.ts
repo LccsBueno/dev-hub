@@ -17,6 +17,8 @@ export interface ProjectConfig {
   hidden: boolean
   missing?: boolean
   lastRunAt?: string
+  tags: string[]
+  notes: string
 }
 
 export interface Config {

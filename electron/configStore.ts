@@ -41,7 +41,15 @@ export function mergeProjects(
   for (const s of scanned) {
     const prev = existing[s.id]
     if (prev) {
-      merged[s.id] = { ...prev, name: s.name, path: s.path, stack: s.stack, missing: false }
+      merged[s.id] = {
+        ...prev,
+        name: s.name,
+        path: s.path,
+        stack: s.stack,
+        missing: false,
+        tags: prev.tags ?? [],
+        notes: prev.notes ?? ''
+      }
     } else {
       merged[s.id] = {
         name: s.name,
@@ -50,7 +58,9 @@ export function mergeProjects(
         runCommand: s.suggestedCommand,
         pinned: false,
         hidden: false,
-        missing: false
+        missing: false,
+        tags: [],
+        notes: ''
       }
     }
   }

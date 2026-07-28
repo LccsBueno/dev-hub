@@ -44,7 +44,9 @@ describe('loadConfig', () => {
           stack: 'node',
           runCommand: 'npm run dev',
           pinned: true,
-          hidden: false
+          hidden: false,
+          tags: ['tooling'],
+          notes: 'test notes'
         }
       }
     }
@@ -64,7 +66,7 @@ describe('mergeProjects', () => {
     suggestedCommand: 'npm run dev'
   }
 
-  it('adds new projects with the suggested command', () => {
+  it('adds new projects with the suggested command and empty tags/notes', () => {
     const merged = mergeProjects({}, [scannedDemo])
     expect(merged['id1']).toEqual({
       name: 'demo',
@@ -73,7 +75,9 @@ describe('mergeProjects', () => {
       runCommand: 'npm run dev',
       pinned: false,
       hidden: false,
-      missing: false
+      missing: false,
+      tags: [],
+      notes: ''
     })
   })
 
@@ -85,7 +89,9 @@ describe('mergeProjects', () => {
         stack: 'node',
         runCommand: 'npm run start:custom',
         pinned: true,
-        hidden: false
+        hidden: false,
+        tags: ['client-x'],
+        notes: 'important'
       }
     }
     const merged = mergeProjects(existing, [scannedDemo])
@@ -102,7 +108,9 @@ describe('mergeProjects', () => {
         runCommand: 'x',
         pinned: false,
         hidden: false,
-        missing: true
+        missing: true,
+        tags: [],
+        notes: ''
       }
     }
     const merged = mergeProjects(existing, [scannedDemo])
@@ -119,11 +127,45 @@ describe('mergeProjects', () => {
         stack: 'python',
         runCommand: 'python main.py',
         pinned: false,
-        hidden: true
+        hidden: true,
+        tags: [],
+        notes: ''
       }
     }
     const merged = mergeProjects(existing, [scannedDemo])
     expect(merged['gone']).toEqual({ ...existing['gone'], missing: true })
     expect(merged['id1']).toBeDefined()
+  })
+
+  it('preserves tags and notes across rescans', () => {
+    const existing: Record<string, ProjectConfig> = {
+      id1: {
+        name: 'demo',
+        path: 'C:\\dev\\demo',
+        stack: 'node',
+        runCommand: 'npm run dev',
+        pinned: false,
+        hidden: false,
+        tags: ['scraper', 'client-x'],
+        notes: 'remember to update the .env file'
+      }
+    }
+    const merged = mergeProjects(existing, [scannedDemo])
+    expect(merged['id1'].tags).toEqual(['scraper', 'client-x'])
+    expect(merged['id1'].notes).toBe('remember to update the .env file')
+  })
+
+  it('backfills tags and notes for pre-existing entries that lack them', () => {
+    const legacyEntry = {
+      name: 'demo',
+      path: 'C:\\dev\\demo',
+      stack: 'node',
+      runCommand: 'npm run dev',
+      pinned: false,
+      hidden: false
+    } as ProjectConfig
+    const merged = mergeProjects({ id1: legacyEntry }, [scannedDemo])
+    expect(merged['id1'].tags).toEqual([])
+    expect(merged['id1'].notes).toBe('')
   })
 })
