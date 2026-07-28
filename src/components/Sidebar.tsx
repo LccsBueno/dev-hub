@@ -50,7 +50,7 @@ export default function Sidebar({ view, onChange }: Props) {
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-sm font-bold">
           P
         </div>
-        <span className="text-sm font-semibold">Project Manager</span>
+        <span className="font-serif text-base">Project Manager</span>
       </div>
       <nav className="flex flex-col gap-1">
         {items.map(({ view: v, label, icon }) => (

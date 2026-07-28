@@ -39,10 +39,10 @@ export default function App() {
     <ToastProvider>
       <div className="flex h-screen bg-bg text-white">
         <Sidebar view={view} onChange={setView} />
-        <main className="flex-1 overflow-y-auto p-8">
+        <main className="flex-1 overflow-y-auto p-10">
           {view === 'projects' ? (
             <>
-              <h1 className="mb-6 text-2xl font-semibold">Projetos</h1>
+              <h1 className="mb-8 font-serif text-3xl font-medium">Projetos</h1>
               <SearchBar
                 search={search}
                 onSearch={setSearch}
@@ -58,7 +58,7 @@ export default function App() {
             </>
           ) : (
             <>
-              <h1 className="mb-6 text-2xl font-semibold">Configurações</h1>
+              <h1 className="mb-8 font-serif text-3xl font-medium">Configurações</h1>
               {config && (
                 <SettingsPanel
                   config={config}

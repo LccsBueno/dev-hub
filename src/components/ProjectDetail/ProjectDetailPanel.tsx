@@ -106,7 +106,7 @@ export default function ProjectDetailPanel({
         {project && displayId && (
           <>
             <div className="flex items-center justify-between border-b border-border px-5 py-4">
-              <h2 className="truncate text-base font-semibold">{project.name}</h2>
+              <h2 className="truncate font-serif text-lg font-medium">{project.name}</h2>
               <button
                 onClick={onClose}
                 title="Fechar"

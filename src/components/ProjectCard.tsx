@@ -53,7 +53,7 @@ export default function ProjectCard({ id, project, runningSince, onSelect, onCom
   return (
     <div
       onClick={() => onSelect(id)}
-      className={`cursor-pointer rounded-xl border border-border bg-card p-5 transition-[background-color,box-shadow] hover:bg-card-hover hover:shadow-card-hover ${
+      className={`cursor-pointer rounded-2xl border border-border bg-card p-5 transition-[background-color,box-shadow] hover:bg-card-hover hover:shadow-card-hover ${
         project.missing ? 'opacity-40' : ''
       }`}
     >
