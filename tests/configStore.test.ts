@@ -277,4 +277,39 @@ describe('mergeProjects', () => {
     expect(merged['id1'].hasDockerfile).toBe(false)
     expect(merged['id1'].runMode).toBe('native')
   })
+
+  it('never auto-switches a project into docker mode just because a Dockerfile is present', () => {
+    const existing: Record<string, ProjectConfig> = {
+      id1: {
+        name: 'demo',
+        path: 'C:\\dev\\demo',
+        stack: 'node',
+        runCommand: 'npm run dev',
+        pinned: false,
+        hidden: false,
+        tags: [],
+        notes: '',
+        hasDockerfile: false,
+        runMode: 'native'
+      }
+    }
+    const scannedWithDocker: ScannedProject = { ...scannedDemo, hasDockerfile: true }
+    const merged = mergeProjects(existing, [scannedWithDocker])
+    expect(merged['id1'].hasDockerfile).toBe(true)
+    expect(merged['id1'].runMode).toBe('native')
+  })
+
+  it('backfills hasDockerfile and runMode for legacy entries that go missing on rescan', () => {
+    const legacyGone = {
+      name: 'gone',
+      path: 'D:\\gone',
+      stack: 'python',
+      runCommand: 'python main.py',
+      pinned: false,
+      hidden: true
+    } as ProjectConfig
+    const merged = mergeProjects({ gone: legacyGone }, [scannedDemo])
+    expect(merged['gone'].hasDockerfile).toBe(false)
+    expect(merged['gone'].runMode).toBe('native')
+  })
 })
