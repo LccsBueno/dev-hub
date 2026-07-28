@@ -91,7 +91,7 @@ export default function ProjectCard({ id, project, runningSince, onSelect, onCom
         onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
         onClick={(e) => e.stopPropagation()}
         placeholder="comando de run…"
-        className="mb-4 w-full rounded-md border border-border bg-bg px-2 py-1.5 font-mono text-xs text-muted outline-none focus:border-accent focus:text-white"
+        className="mb-4 w-full rounded-md border border-border bg-bg px-2 py-1.5 font-mono text-xs text-muted outline-none focus:border-accent focus:text-white focus-visible:ring-2 focus-visible:ring-accent/50"
       />
 
       <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
