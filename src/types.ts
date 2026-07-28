@@ -60,3 +60,5 @@ export interface GitInfo {
   branches: string[]
   commits: GitCommit[]
 }
+
+export const emptyGitInfo: GitInfo = { isRepo: false, currentBranch: null, branches: [], commits: [] }

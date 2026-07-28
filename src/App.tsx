@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import Sidebar, { type View } from './components/Sidebar'
 import SearchBar from './components/SearchBar'
 import ProjectGrid from './components/ProjectGrid'
@@ -25,6 +25,7 @@ export default function App() {
     updateNotes
   } = useProjects()
   const running = useProcessStatus()
+  const closePanel = useCallback(() => setSelectedId(null), [])
 
   const filtered = Object.fromEntries(
     Object.entries(config?.projects ?? {}).filter(
@@ -73,7 +74,7 @@ export default function App() {
         <ProjectDetailPanel
           projectId={selectedId}
           projects={config?.projects ?? {}}
-          onClose={() => setSelectedId(null)}
+          onClose={closePanel}
           onCommandChange={updateProjectCommand}
           onTagsChange={updateTags}
           onNotesChange={updateNotes}

@@ -1,7 +1,7 @@
 import { spawn } from 'child_process'
 import { existsSync } from 'fs'
 import { join } from 'path'
-import type { GitInfo } from '../src/types'
+import { emptyGitInfo, type GitInfo } from '../src/types'
 
 function runGit(args: string[], cwd: string): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -18,7 +18,7 @@ function runGit(args: string[], cwd: string): Promise<string> {
   })
 }
 
-export const emptyGitInfo: GitInfo = { isRepo: false, currentBranch: null, branches: [], commits: [] }
+export { emptyGitInfo }
 
 export async function getGitInfo(path: string): Promise<GitInfo> {
   if (!existsSync(join(path, '.git'))) return emptyGitInfo

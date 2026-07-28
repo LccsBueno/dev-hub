@@ -1,28 +1,29 @@
 import { useEffect, useState } from 'react'
 import { GitBranch, RefreshCw } from 'lucide-react'
-import type { GitInfo } from '../../types'
+import { emptyGitInfo, type GitInfo } from '../../types'
 
 interface Props {
   projectPath: string
 }
 
-const emptyInfo: GitInfo = { isRepo: false, currentBranch: null, branches: [], commits: [] }
-
 export default function GitTab({ projectPath }: Props) {
-  const [info, setInfo] = useState<GitInfo>(emptyInfo)
+  const [info, setInfo] = useState<GitInfo>(emptyGitInfo)
   const [loading, setLoading] = useState(true)
-
-  const load = (): void => {
-    setLoading(true)
-    window.api.getGitInfo(projectPath).then((result) => {
-      setInfo(result)
-      setLoading(false)
-    })
-  }
+  const [reloadKey, setReloadKey] = useState(0)
 
   useEffect(() => {
-    load()
-  }, [projectPath])
+    let cancelled = false
+    setLoading(true)
+    window.api.getGitInfo(projectPath).then((result) => {
+      if (!cancelled) {
+        setInfo(result)
+        setLoading(false)
+      }
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [projectPath, reloadKey])
 
   if (loading) {
     return <p className="p-5 text-sm text-muted">Carregando…</p>
@@ -44,7 +45,7 @@ export default function GitTab({ projectPath }: Props) {
           <span className="font-medium">{info.currentBranch}</span>
         </div>
         <button
-          onClick={load}
+          onClick={() => setReloadKey((k) => k + 1)}
           title="Atualizar"
           className="flex h-7 w-7 items-center justify-center rounded-md text-muted transition-colors hover:bg-border hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
         >

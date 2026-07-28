@@ -73,11 +73,18 @@ export default function ProjectDetailPanel({
   useEffect(() => {
     if (!open) return
     const handleKey = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') onClose()
+      if (e.key === 'Escape') {
+        ;(document.activeElement as HTMLElement | null)?.blur()
+        onClose()
+      }
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
   }, [open, onClose])
+
+  useEffect(() => {
+    if (open && displayId && !projects[displayId]) onClose()
+  }, [open, displayId, projects, onClose])
 
   const project = displayId ? projects[displayId] : null
 
@@ -86,10 +93,12 @@ export default function ProjectDetailPanel({
       <div
         ref={backdropRef}
         onClick={onClose}
+        inert={!open}
         className={`fixed inset-0 z-40 bg-black/60 opacity-0 ${open ? '' : 'pointer-events-none'}`}
       />
       <div
         ref={panelRef}
+        inert={!open}
         className={`fixed inset-y-0 right-0 z-50 flex w-[480px] translate-x-full flex-col border-l border-border bg-card opacity-0 shadow-panel ${
           open ? '' : 'pointer-events-none'
         }`}
@@ -124,7 +133,7 @@ export default function ProjectDetailPanel({
               ))}
             </div>
 
-            <TabContent tabId={activeTab}>
+            <TabContent key={activeTab} tabId={activeTab}>
               {activeTab === 'info' && (
                 <InfoTab
                   projectId={displayId}

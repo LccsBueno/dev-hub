@@ -83,7 +83,7 @@ export default function InfoTab({ projectId, project, onCommandChange, onTagsCha
               <button
                 onClick={() => removeTag(tag)}
                 title={`Remover ${tag}`}
-                className="text-muted hover:text-red-400 focus-visible:outline-none"
+                className="text-muted hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 rounded-full"
               >
                 <X size={10} />
               </button>
