@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Sidebar, { type View } from './components/Sidebar'
 import SearchBar from './components/SearchBar'
 import ProjectGrid from './components/ProjectGrid'
-import LogDrawer from './components/LogDrawer'
+import ProjectDetailPanel from './components/ProjectDetail/ProjectDetailPanel'
 import SettingsPanel from './components/SettingsPanel'
 import { ToastProvider } from './components/Toast'
 import { useProjects } from './hooks/useProjects'
@@ -14,8 +14,16 @@ export default function App() {
   const [search, setSearch] = useState('')
   const [stackFilter, setStackFilter] = useState<Stack | 'all'>('all')
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const { config, scanning, rescan, updateProjectCommand, updateRootFolders, updateEditorCommand } =
-    useProjects()
+  const {
+    config,
+    scanning,
+    rescan,
+    updateProjectCommand,
+    updateRootFolders,
+    updateEditorCommand,
+    updateTags,
+    updateNotes
+  } = useProjects()
   const running = useProcessStatus()
 
   const filtered = Object.fromEntries(
@@ -30,48 +38,46 @@ export default function App() {
     <ToastProvider>
       <div className="flex h-screen bg-bg text-white">
         <Sidebar view={view} onChange={setView} />
-        <div className="relative flex flex-1 flex-col overflow-hidden">
-          <main className="flex-1 overflow-y-auto p-8">
-            {view === 'projects' ? (
-              <>
-                <h1 className="mb-6 text-2xl font-semibold">Projetos</h1>
-                <SearchBar
-                  search={search}
-                  onSearch={setSearch}
-                  stackFilter={stackFilter}
-                  onStackFilter={setStackFilter}
+        <main className="flex-1 overflow-y-auto p-8">
+          {view === 'projects' ? (
+            <>
+              <h1 className="mb-6 text-2xl font-semibold">Projetos</h1>
+              <SearchBar
+                search={search}
+                onSearch={setSearch}
+                stackFilter={stackFilter}
+                onStackFilter={setStackFilter}
+              />
+              <ProjectGrid
+                projects={filtered}
+                running={running}
+                onSelect={setSelectedId}
+                onCommandChange={updateProjectCommand}
+              />
+            </>
+          ) : (
+            <>
+              <h1 className="mb-6 text-2xl font-semibold">Configurações</h1>
+              {config && (
+                <SettingsPanel
+                  config={config}
+                  scanning={scanning}
+                  onUpdateRoots={updateRootFolders}
+                  onUpdateEditor={updateEditorCommand}
+                  onRescan={rescan}
                 />
-                <ProjectGrid
-                  projects={filtered}
-                  running={running}
-                  onSelect={setSelectedId}
-                  onCommandChange={updateProjectCommand}
-                />
-              </>
-            ) : (
-              <>
-                <h1 className="mb-6 text-2xl font-semibold">Configurações</h1>
-                {config && (
-                  <SettingsPanel
-                    config={config}
-                    scanning={scanning}
-                    onUpdateRoots={updateRootFolders}
-                    onUpdateEditor={updateEditorCommand}
-                    onRescan={rescan}
-                  />
-                )}
-              </>
-            )}
-          </main>
-          {selectedId && config?.projects[selectedId] && (
-            <LogDrawer
-              projectId={selectedId}
-              projectName={config.projects[selectedId].name}
-              projectPath={config.projects[selectedId].path}
-              onClose={() => setSelectedId(null)}
-            />
+              )}
+            </>
           )}
-        </div>
+        </main>
+        <ProjectDetailPanel
+          projectId={selectedId}
+          projects={config?.projects ?? {}}
+          onClose={() => setSelectedId(null)}
+          onCommandChange={updateProjectCommand}
+          onTagsChange={updateTags}
+          onNotesChange={updateNotes}
+        />
       </div>
     </ToastProvider>
   )

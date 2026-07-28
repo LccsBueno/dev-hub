@@ -1,17 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowDown, SquareTerminal, Trash2, X } from 'lucide-react'
-import type { LogLine } from '../types'
+import { ArrowDown, SquareTerminal, Trash2 } from 'lucide-react'
+import type { LogLine } from '../../types'
 
 const MAX_CLIENT_LINES = 2000
 
 interface Props {
   projectId: string
-  projectName: string
   projectPath: string
-  onClose: () => void
 }
 
-export default function LogDrawer({ projectId, projectName, projectPath, onClose }: Props) {
+export default function LogsTab({ projectId, projectPath }: Props) {
   const [lines, setLines] = useState<LogLine[]>([])
   const [atBottom, setAtBottom] = useState(true)
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -52,38 +50,28 @@ export default function LogDrawer({ projectId, projectName, projectPath, onClose
   }
 
   return (
-    <div className="flex h-72 shrink-0 flex-col border-t border-border bg-[#0d0d0d]">
-      <div className="flex items-center justify-between border-b border-border px-4 py-2">
-        <span className="font-mono text-xs text-muted">{projectName} — logs</span>
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => window.api.openInTerminal(projectPath)}
-            title="Abrir em terminal externo"
-            className="flex h-7 w-7 items-center justify-center rounded-md text-muted hover:bg-border hover:text-white"
-          >
-            <SquareTerminal size={14} />
-          </button>
-          <button
-            onClick={clear}
-            title="Limpar"
-            className="flex h-7 w-7 items-center justify-center rounded-md text-muted hover:bg-border hover:text-white"
-          >
-            <Trash2 size={14} />
-          </button>
-          <button
-            onClick={onClose}
-            title="Fechar"
-            className="flex h-7 w-7 items-center justify-center rounded-md text-muted hover:bg-border hover:text-white"
-          >
-            <X size={14} />
-          </button>
-        </div>
+    <div className="relative flex h-full flex-col">
+      <div className="flex items-center justify-end gap-1 border-b border-border px-5 py-2">
+        <button
+          onClick={() => window.api.openInTerminal(projectPath)}
+          title="Abrir em terminal externo"
+          className="flex h-7 w-7 items-center justify-center rounded-md text-muted transition-colors hover:bg-border hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+        >
+          <SquareTerminal size={14} />
+        </button>
+        <button
+          onClick={clear}
+          title="Limpar"
+          className="flex h-7 w-7 items-center justify-center rounded-md text-muted transition-colors hover:bg-border hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+        >
+          <Trash2 size={14} />
+        </button>
       </div>
 
       <div
         ref={scrollRef}
         onScroll={handleScroll}
-        className="relative flex-1 overflow-y-auto px-4 py-2 font-mono text-xs leading-5"
+        className="flex-1 overflow-y-auto px-5 py-3 font-mono text-xs leading-5"
       >
         {lines.length === 0 ? (
           <p className="text-muted">Sem logs. Rode o projeto pra ver a saída aqui.</p>
@@ -102,7 +90,7 @@ export default function LogDrawer({ projectId, projectName, projectPath, onClose
             setAtBottom(true)
             scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight })
           }}
-          className="absolute right-6 bottom-6 flex h-8 w-8 items-center justify-center rounded-full bg-accent text-white shadow-lg"
+          className="absolute right-5 bottom-5 flex h-8 w-8 items-center justify-center rounded-full bg-accent text-white shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
           title="Ir para o fim"
         >
           <ArrowDown size={14} />
