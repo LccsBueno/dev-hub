@@ -23,7 +23,7 @@ interface Props {
 export default function SearchBar({ search, onSearch, stackFilter, onStackFilter }: Props) {
   return (
     <div className="mb-6 flex items-center gap-3">
-      <div className="flex flex-1 items-center gap-2 rounded-lg border border-border bg-card px-3 py-2">
+      <div className="flex flex-1 items-center gap-2 rounded-lg border border-border bg-card px-3 py-2 focus-within:border-accent">
         <Search size={16} className="text-muted" />
         <input
           value={search}
@@ -35,7 +35,7 @@ export default function SearchBar({ search, onSearch, stackFilter, onStackFilter
       <select
         value={stackFilter}
         onChange={(e) => onStackFilter(e.target.value as Stack | 'all')}
-        className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-white outline-none"
+        className="rounded-lg border border-border bg-card px-3 py-2 text-sm text-white outline-none focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent/50"
       >
         {stacks.map((s) => (
           <option key={s} value={s}>
