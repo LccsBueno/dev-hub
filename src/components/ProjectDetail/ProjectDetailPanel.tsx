@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { X } from 'lucide-react'
-import type { ProjectConfig } from '../../types'
+import type { ProjectConfig, RunMode } from '../../types'
 import { animatePanelClose, animatePanelOpen, animateTabContent } from '../../lib/motion'
 import InfoTab from './InfoTab'
 import NotesTab from './NotesTab'
@@ -24,6 +24,7 @@ interface Props {
   onCommandChange: (id: string, command: string) => void
   onTagsChange: (id: string, tags: string[]) => void
   onNotesChange: (id: string, notes: string) => void
+  onRunModeChange: (id: string, runMode: RunMode) => void
 }
 
 function TabContent({ tabId, children }: { tabId: TabId; children: ReactNode }) {
@@ -46,7 +47,8 @@ export default function ProjectDetailPanel({
   onClose,
   onCommandChange,
   onTagsChange,
-  onNotesChange
+  onNotesChange,
+  onRunModeChange
 }: Props) {
   const [displayId, setDisplayId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<TabId>('info')
@@ -140,6 +142,7 @@ export default function ProjectDetailPanel({
                   project={project}
                   onCommandChange={onCommandChange}
                   onTagsChange={onTagsChange}
+                  onRunModeChange={onRunModeChange}
                 />
               )}
               {activeTab === 'notes' && (

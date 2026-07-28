@@ -22,7 +22,8 @@ export default function App() {
     updateRootFolders,
     updateEditorCommand,
     updateTags,
-    updateNotes
+    updateNotes,
+    updateRunMode
   } = useProjects()
   const running = useProcessStatus()
   const closePanel = useCallback(() => setSelectedId(null), [])
@@ -81,6 +82,7 @@ export default function App() {
           onCommandChange={updateProjectCommand}
           onTagsChange={updateTags}
           onNotesChange={updateNotes}
+          onRunModeChange={updateRunMode}
         />
       </div>
     </ToastProvider>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
-import type { ProjectConfig, Stack } from '../../types'
+import type { ProjectConfig, RunMode, Stack } from '../../types'
+import { dockerRunCommand } from '../../lib/dockerCommand'
 
 const stackColors: Record<Stack, string> = {
   node: 'bg-green-500/15 text-green-400',
@@ -18,9 +19,16 @@ interface Props {
   project: ProjectConfig
   onCommandChange: (id: string, command: string) => void
   onTagsChange: (id: string, tags: string[]) => void
+  onRunModeChange: (id: string, runMode: RunMode) => void
 }
 
-export default function InfoTab({ projectId, project, onCommandChange, onTagsChange }: Props) {
+export default function InfoTab({
+  projectId,
+  project,
+  onCommandChange,
+  onTagsChange,
+  onRunModeChange
+}: Props) {
   const [command, setCommand] = useState(project.runCommand)
   const [tagInput, setTagInput] = useState('')
 
@@ -59,16 +67,46 @@ export default function InfoTab({ projectId, project, onCommandChange, onTagsCha
         <p className="text-xs break-all text-neutral-300">{project.path}</p>
       </section>
 
+      {project.hasDockerfile && (
+        <section>
+          <h3 className="mb-2 text-xs font-medium text-muted">Modo de execução</h3>
+          <div className="flex gap-1 rounded-lg border border-border bg-bg p-1">
+            <button
+              onClick={() => onRunModeChange(projectId, 'native')}
+              className={`flex-1 rounded-md px-3 py-1.5 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ${
+                project.runMode === 'native' ? 'bg-card text-white' : 'text-muted hover:text-white'
+              }`}
+            >
+              Nativo
+            </button>
+            <button
+              onClick={() => onRunModeChange(projectId, 'docker')}
+              className={`flex-1 rounded-md px-3 py-1.5 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ${
+                project.runMode === 'docker' ? 'bg-card text-white' : 'text-muted hover:text-white'
+              }`}
+            >
+              Docker
+            </button>
+          </div>
+        </section>
+      )}
+
       <section>
         <h3 className="mb-2 text-xs font-medium text-muted">Comando de run</h3>
-        <input
-          value={command}
-          onChange={(e) => setCommand(e.target.value)}
-          onBlur={saveCommand}
-          onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
-          placeholder="comando de run…"
-          className="w-full rounded-md border border-border bg-bg px-2 py-1.5 font-mono text-xs text-muted outline-none focus:border-accent focus:text-white"
-        />
+        {project.runMode === 'docker' ? (
+          <p className="rounded-md border border-border bg-bg px-2 py-1.5 font-mono text-xs break-all text-muted">
+            {dockerRunCommand(project.path, projectId)}
+          </p>
+        ) : (
+          <input
+            value={command}
+            onChange={(e) => setCommand(e.target.value)}
+            onBlur={saveCommand}
+            onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+            placeholder="comando de run…"
+            className="w-full rounded-md border border-border bg-bg px-2 py-1.5 font-mono text-xs text-muted outline-none focus:border-accent focus:text-white"
+          />
+        )}
       </section>
 
       <section>
