@@ -40,6 +40,12 @@ function createWindow(): void {
     height: 900,
     backgroundColor: '#0a0a0a',
     autoHideMenuBar: true,
+    titleBarStyle: 'hidden',
+    titleBarOverlay: {
+      color: '#0a0a0a',
+      symbolColor: '#ffffff',
+      height: 32
+    },
     webPreferences: {
       preload: join(__dirname, '../preload/preload.js'),
       sandbox: false,

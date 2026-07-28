@@ -37,40 +37,43 @@ export default function App() {
 
   return (
     <ToastProvider>
-      <div className="flex h-screen bg-bg text-white">
-        <Sidebar view={view} onChange={setView} />
-        <main className="flex-1 overflow-y-auto p-10">
-          {view === 'projects' ? (
-            <>
-              <h1 className="mb-8 font-serif text-3xl font-medium">Projetos</h1>
-              <SearchBar
-                search={search}
-                onSearch={setSearch}
-                stackFilter={stackFilter}
-                onStackFilter={setStackFilter}
-              />
-              <ProjectGrid
-                projects={filtered}
-                running={running}
-                onSelect={setSelectedId}
-                onCommandChange={updateProjectCommand}
-              />
-            </>
-          ) : (
-            <>
-              <h1 className="mb-8 font-serif text-3xl font-medium">Configurações</h1>
-              {config && (
-                <SettingsPanel
-                  config={config}
-                  scanning={scanning}
-                  onUpdateRoots={updateRootFolders}
-                  onUpdateEditor={updateEditorCommand}
-                  onRescan={rescan}
+      <div className="flex h-screen flex-col bg-bg text-white">
+        <div className="drag-region h-8 shrink-0" />
+        <div className="flex flex-1 overflow-hidden">
+          <Sidebar view={view} onChange={setView} />
+          <main className="flex-1 overflow-y-auto p-10">
+            {view === 'projects' ? (
+              <>
+                <h1 className="mb-8 font-serif text-3xl font-medium">Projetos</h1>
+                <SearchBar
+                  search={search}
+                  onSearch={setSearch}
+                  stackFilter={stackFilter}
+                  onStackFilter={setStackFilter}
                 />
-              )}
-            </>
-          )}
-        </main>
+                <ProjectGrid
+                  projects={filtered}
+                  running={running}
+                  onSelect={setSelectedId}
+                  onCommandChange={updateProjectCommand}
+                />
+              </>
+            ) : (
+              <>
+                <h1 className="mb-8 font-serif text-3xl font-medium">Configurações</h1>
+                {config && (
+                  <SettingsPanel
+                    config={config}
+                    scanning={scanning}
+                    onUpdateRoots={updateRootFolders}
+                    onUpdateEditor={updateEditorCommand}
+                    onRescan={rescan}
+                  />
+                )}
+              </>
+            )}
+          </main>
+        </div>
         <ProjectDetailPanel
           projectId={selectedId}
           projects={config?.projects ?? {}}
