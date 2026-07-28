@@ -48,7 +48,9 @@ export function mergeProjects(
         stack: s.stack,
         missing: false,
         tags: prev.tags ?? [],
-        notes: prev.notes ?? ''
+        notes: prev.notes ?? '',
+        hasDockerfile: s.hasDockerfile,
+        runMode: s.hasDockerfile ? (prev.runMode ?? 'native') : 'native'
       }
     } else {
       merged[s.id] = {
@@ -60,14 +62,23 @@ export function mergeProjects(
         hidden: false,
         missing: false,
         tags: [],
-        notes: ''
+        notes: '',
+        hasDockerfile: s.hasDockerfile,
+        runMode: 'native'
       }
     }
   }
 
   for (const [id, p] of Object.entries(existing)) {
     if (!scannedIds.has(id)) {
-      merged[id] = { ...p, missing: true, tags: p.tags ?? [], notes: p.notes ?? '' }
+      merged[id] = {
+        ...p,
+        missing: true,
+        tags: p.tags ?? [],
+        notes: p.notes ?? '',
+        hasDockerfile: p.hasDockerfile ?? false,
+        runMode: p.hasDockerfile ? (p.runMode ?? 'native') : 'native'
+      }
     }
   }
 

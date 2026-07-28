@@ -8,6 +8,8 @@ export type Stack =
   | 'python'
   | 'unknown'
 
+export type RunMode = 'native' | 'docker'
+
 export interface ProjectConfig {
   name: string
   path: string
@@ -19,6 +21,8 @@ export interface ProjectConfig {
   lastRunAt?: string
   tags: string[]
   notes: string
+  hasDockerfile: boolean
+  runMode: RunMode
 }
 
 export interface Config {
