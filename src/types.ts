@@ -46,3 +46,17 @@ export interface RootFolderStatus {
   path: string
   exists: boolean
 }
+
+export interface GitCommit {
+  hash: string
+  message: string
+  author: string
+  relativeDate: string
+}
+
+export interface GitInfo {
+  isRepo: boolean
+  currentBranch: string | null
+  branches: string[]
+  commits: GitCommit[]
+}
