@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Code2, Folder, Play, Square } from 'lucide-react'
 import type { ProjectConfig, Stack } from '../types'
+import { usePressAnimation } from '../lib/motion'
 
 const stackColors: Record<Stack, string> = {
   node: 'bg-green-500/15 text-green-400',
@@ -32,6 +33,9 @@ export default function ProjectCard({ id, project, runningSince, onSelect, onCom
   const running = runningSince !== undefined
   const [command, setCommand] = useState(project.runCommand)
   const [now, setNow] = useState(Date.now())
+  const runBtn = usePressAnimation<HTMLButtonElement>()
+  const folderBtn = usePressAnimation<HTMLButtonElement>()
+  const editorBtn = usePressAnimation<HTMLButtonElement>()
 
   useEffect(() => setCommand(project.runCommand), [project.runCommand])
 
@@ -49,7 +53,7 @@ export default function ProjectCard({ id, project, runningSince, onSelect, onCom
   return (
     <div
       onClick={() => onSelect(id)}
-      className={`cursor-pointer rounded-xl border border-border bg-card p-5 transition-colors hover:bg-card-hover ${
+      className={`cursor-pointer rounded-xl border border-border bg-card p-5 transition-[background-color,box-shadow] hover:bg-card-hover hover:shadow-card-hover ${
         project.missing ? 'opacity-40' : ''
       }`}
     >
@@ -60,12 +64,25 @@ export default function ProjectCard({ id, project, runningSince, onSelect, onCom
         </span>
       </div>
 
-      <div className="mb-4 flex items-center gap-2 text-xs text-muted">
+      <div className="mb-3 flex items-center gap-2 text-xs text-muted">
         <span
           className={`h-2 w-2 rounded-full ${running ? 'animate-pulse bg-green-400' : 'bg-neutral-600'}`}
         />
         {project.missing ? 'pasta não encontrada' : running ? elapsedLabel(runningSince, now) : 'parado'}
       </div>
+
+      {project.tags.length > 0 && (
+        <div className="mb-3 flex flex-wrap items-center gap-1">
+          {project.tags.slice(0, 3).map((tag) => (
+            <span key={tag} className="rounded-full bg-bg px-2 py-0.5 text-[11px] text-neutral-400">
+              {tag}
+            </span>
+          ))}
+          {project.tags.length > 3 && (
+            <span className="text-[11px] text-muted">+{project.tags.length - 3}</span>
+          )}
+        </div>
+      )}
 
       <input
         value={command}
@@ -79,10 +96,14 @@ export default function ProjectCard({ id, project, runningSince, onSelect, onCom
 
       <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
         <button
+          ref={runBtn.ref}
+          onPointerDown={runBtn.onPointerDown}
+          onPointerUp={runBtn.onPointerUp}
+          onPointerLeave={runBtn.onPointerLeave}
           onClick={() => (running ? window.api.stopProject(id) : window.api.runProject(id))}
           disabled={project.missing}
           title={running ? 'Parar' : 'Rodar'}
-          className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors disabled:opacity-30 ${
+          className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none disabled:opacity-30 ${
             running
               ? 'bg-red-500/15 text-red-400 hover:bg-red-500/25'
               : 'bg-accent/15 text-accent hover:bg-accent/25'
@@ -91,18 +112,26 @@ export default function ProjectCard({ id, project, runningSince, onSelect, onCom
           {running ? <Square size={14} /> : <Play size={14} />}
         </button>
         <button
+          ref={folderBtn.ref}
+          onPointerDown={folderBtn.onPointerDown}
+          onPointerUp={folderBtn.onPointerUp}
+          onPointerLeave={folderBtn.onPointerLeave}
           onClick={() => window.api.openFolder(project.path)}
           disabled={project.missing}
           title="Abrir pasta"
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-border hover:text-white disabled:opacity-30"
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-border hover:text-white focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none disabled:opacity-30"
         >
           <Folder size={14} />
         </button>
         <button
+          ref={editorBtn.ref}
+          onPointerDown={editorBtn.onPointerDown}
+          onPointerUp={editorBtn.onPointerUp}
+          onPointerLeave={editorBtn.onPointerLeave}
           onClick={() => window.api.openInEditor(project.path)}
           disabled={project.missing}
           title="Abrir no editor"
-          className="flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-border hover:text-white disabled:opacity-30"
+          className="flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-border hover:text-white focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none disabled:opacity-30"
         >
           <Code2 size={14} />
         </button>
