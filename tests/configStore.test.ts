@@ -168,4 +168,19 @@ describe('mergeProjects', () => {
     expect(merged['id1'].tags).toEqual([])
     expect(merged['id1'].notes).toBe('')
   })
+
+  it('backfills tags and notes for legacy entries that go missing on rescan', () => {
+    const legacyGone = {
+      name: 'gone',
+      path: 'D:\\gone',
+      stack: 'python',
+      runCommand: 'python main.py',
+      pinned: false,
+      hidden: true
+    } as ProjectConfig
+    const merged = mergeProjects({ gone: legacyGone }, [scannedDemo])
+    expect(merged['gone'].tags).toEqual([])
+    expect(merged['gone'].notes).toBe('')
+    expect(merged['gone'].missing).toBe(true)
+  })
 })

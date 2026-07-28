@@ -67,7 +67,7 @@ export function mergeProjects(
 
   for (const [id, p] of Object.entries(existing)) {
     if (!scannedIds.has(id)) {
-      merged[id] = { ...p, missing: true }
+      merged[id] = { ...p, missing: true, tags: p.tags ?? [], notes: p.notes ?? '' }
     }
   }
 
