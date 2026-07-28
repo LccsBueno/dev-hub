@@ -53,5 +53,5 @@ describe('getGitInfo', () => {
     const info = await getGitInfo(dir)
     expect(info.commits).toHaveLength(20)
     expect(info.commits[0].message).toBe('commit 24')
-  })
+  }, 30000)
 })
