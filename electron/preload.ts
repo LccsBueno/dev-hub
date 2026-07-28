@@ -9,6 +9,8 @@ const api = {
     ipcRenderer.invoke('config:updateProjectCommand', id, command),
   updateTags: (id: string, tags: string[]) => ipcRenderer.invoke('config:updateTags', id, tags),
   updateNotes: (id: string, notes: string) => ipcRenderer.invoke('config:updateNotes', id, notes),
+  updateRunMode: (id: string, runMode: 'native' | 'docker') =>
+    ipcRenderer.invoke('config:updateRunMode', id, runMode),
   getGitInfo: (path: string) => ipcRenderer.invoke('git:info', path),
   checkRootFolders: () => ipcRenderer.invoke('config:checkRoots'),
   pickFolder: () => ipcRenderer.invoke('dialog:pickFolder'),

@@ -33,6 +33,11 @@ export function useProjects() {
     setConfig(await window.api.getConfig())
   }, [])
 
+  const updateRunMode = useCallback(async (id: string, runMode: 'native' | 'docker') => {
+    await window.api.updateRunMode(id, runMode)
+    setConfig(await window.api.getConfig())
+  }, [])
+
   const updateRootFolders = useCallback(
     async (folders: string[]) => {
       await window.api.updateRootFolders(folders)
@@ -53,6 +58,7 @@ export function useProjects() {
     updateProjectCommand,
     updateTags,
     updateNotes,
+    updateRunMode,
     updateRootFolders,
     updateEditorCommand
   }

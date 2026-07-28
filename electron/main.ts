@@ -6,7 +6,9 @@ import { loadConfig, saveConfig, mergeProjects } from './configStore'
 import { scanRoots } from './scanner'
 import { ProcessManager } from './processManager'
 import { getGitInfo, emptyGitInfo } from './gitInfo'
-import type { Config } from '../src/types'
+import { stopContainer } from './docker'
+import { dockerContainerName, dockerRunCommand } from '../src/lib/dockerCommand'
+import type { Config, RunMode } from '../src/types'
 
 const pm = new ProcessManager()
 let win: BrowserWindow | null = null
@@ -106,6 +108,15 @@ function registerIpc(): void {
     saveConfig(configPath(), cfg)
   })
 
+  ipcMain.handle('config:updateRunMode', (_e, id: string, runMode: RunMode) => {
+    const cfg = loadConfig(configPath())
+    const project = cfg.projects[id]
+    if (!project) return
+    if (runMode === 'docker' && !project.hasDockerfile) return
+    project.runMode = runMode
+    saveConfig(configPath(), cfg)
+  })
+
   ipcMain.handle('git:info', (_e, path: string) => {
     if (!isKnownProjectPath(path)) return emptyGitInfo
     return getGitInfo(path)
@@ -130,6 +141,14 @@ function registerIpc(): void {
     const cfg = loadConfig(configPath())
     const project = cfg.projects[id]
     if (!project) return
+
+    if (project.runMode === 'docker') {
+      project.lastRunAt = new Date().toISOString()
+      saveConfig(configPath(), cfg)
+      pm.run(id, dockerRunCommand(project.path, id), project.path)
+      return
+    }
+
     if (typeof project.runCommand !== 'string' || !project.runCommand.trim()) {
       sendError(`"${project.name}" não tem comando de run configurado.`)
       return
@@ -139,7 +158,18 @@ function registerIpc(): void {
     pm.run(id, project.runCommand, project.path)
   })
 
-  ipcMain.on('process:stop', (_e, id: string) => pm.stop(id))
+  ipcMain.on('process:stop', (_e, id: string) => {
+    const cfg = loadConfig(configPath())
+    const project = cfg.projects[id]
+    if (project?.runMode === 'docker') {
+      stopContainer(dockerContainerName(id))
+      setTimeout(() => {
+        if (pm.isRunning(id)) pm.stop(id)
+      }, 12000)
+      return
+    }
+    pm.stop(id)
+  })
 
   ipcMain.on('open:folder', (_e, path: string) => {
     if (!isKnownProjectPath(path)) return

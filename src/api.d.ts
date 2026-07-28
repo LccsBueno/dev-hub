@@ -10,6 +10,7 @@ declare global {
       updateProjectCommand(id: string, command: string): Promise<void>
       updateTags(id: string, tags: string[]): Promise<void>
       updateNotes(id: string, notes: string): Promise<void>
+      updateRunMode(id: string, runMode: 'native' | 'docker'): Promise<void>
       getGitInfo(path: string): Promise<GitInfo>
       checkRootFolders(): Promise<RootFolderStatus[]>
       pickFolder(): Promise<string | null>
