@@ -18,7 +18,7 @@ function runGit(args: string[], cwd: string): Promise<string> {
   })
 }
 
-const emptyGitInfo: GitInfo = { isRepo: false, currentBranch: null, branches: [], commits: [] }
+export const emptyGitInfo: GitInfo = { isRepo: false, currentBranch: null, branches: [], commits: [] }
 
 export async function getGitInfo(path: string): Promise<GitInfo> {
   if (!existsSync(join(path, '.git'))) return emptyGitInfo

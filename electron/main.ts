@@ -5,7 +5,7 @@ import { spawn } from 'child_process'
 import { loadConfig, saveConfig, mergeProjects } from './configStore'
 import { scanRoots } from './scanner'
 import { ProcessManager } from './processManager'
-import { getGitInfo } from './gitInfo'
+import { getGitInfo, emptyGitInfo } from './gitInfo'
 import type { Config } from '../src/types'
 
 const pm = new ProcessManager()
@@ -101,7 +101,7 @@ function registerIpc(): void {
   })
 
   ipcMain.handle('git:info', (_e, path: string) => {
-    if (!isKnownProjectPath(path)) return { isRepo: false, currentBranch: null, branches: [], commits: [] }
+    if (!isKnownProjectPath(path)) return emptyGitInfo
     return getGitInfo(path)
   })
 
