@@ -1,17 +1,17 @@
 import type { Stack } from '../types'
 import { stackColors } from '../lib/stackColors'
 
-const STACK_ORDER: (Stack | 'all')[] = ['all', 'node', 'maven', 'rust', 'go', 'python', 'unknown']
+const STACK_ORDER: (Stack | 'all')[] = ['all', 'node', 'maven', 'gradle', 'compose', 'rust', 'go', 'python', 'unknown']
 
 const stackLabels: Record<Stack | 'all', string> = {
-  all: 'Todos',
-  node: 'Node',
-  maven: 'Maven',
-  gradle: 'Gradle',
+  all:     'Todos',
+  node:    'Node',
+  maven:   'Maven',
+  gradle:  'Gradle',
   compose: 'Compose',
-  rust: 'Rust',
-  go: 'Go',
-  python: 'Python',
+  rust:    'Rust',
+  go:      'Go',
+  python:  'Python',
   unknown: 'Outro'
 }
 

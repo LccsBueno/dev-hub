@@ -1,11 +1,13 @@
 import type { Stack } from '../types'
 
 export const stackColors: Partial<Record<Stack, string>> = {
-  node: '#4ade80',
-  maven: '#f87171',
-  rust: '#fb923c',
-  go: '#38bdf8',
-  python: '#facc15',
+  node:    '#4ade80',
+  maven:   '#f87171',
+  gradle:  '#6ee7b7',
+  compose: '#38bdf8',
+  rust:    '#fb923c',
+  go:      '#60a5fa',
+  python:  '#facc15',
   unknown: '#94a3b8'
 }
 

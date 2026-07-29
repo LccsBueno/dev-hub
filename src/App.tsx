@@ -68,8 +68,18 @@ export default function App() {
   ).sort((a, b) => a.localeCompare(b))
 
   const availableStacks = Array.from(
-    new Set(Object.values(config?.projects ?? {}).map((p) => p.stack))
+    new Set(
+      Object.values(config?.projects ?? {})
+        .filter((p) => !p.missing)
+        .map((p) => p.stack)
+    )
   )
+
+  useEffect(() => {
+    if (stackFilter !== 'all' && !availableStacks.includes(stackFilter)) {
+      setStackFilter('all')
+    }
+  }, [availableStacks.join(',')])
 
   const addFolder = async (): Promise<void> => {
     const picked = await window.api.pickFolder()
