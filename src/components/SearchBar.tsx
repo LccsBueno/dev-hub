@@ -44,11 +44,13 @@ export default function SearchBar({ search, onSearch, stackFilter, onStackFilter
           className="w-full bg-transparent text-sm outline-none placeholder:text-muted"
         />
       </div>
-      <div className="flex flex-wrap gap-2">
+      <div role="group" aria-label="Filtrar por stack" className="flex flex-wrap gap-2">
         {stacks.map((s) => (
           <button
             key={s}
+            type="button"
             onClick={() => onStackFilter(s)}
+            aria-pressed={stackFilter === s}
             className={`rounded-full px-3 py-1 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ${
               stackFilter === s
                 ? 'bg-accent/15 text-accent'
