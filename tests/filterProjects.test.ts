@@ -90,6 +90,35 @@ describe('filterProjects', () => {
     expect(Object.keys(result)).toEqual(['a'])
   })
 
+  it('scopes correctly when the selected root already has a trailing separator', () => {
+    const projects = {
+      a: makeProject({ path: 'C:\\dev\\projetos\\demo' }),
+      b: makeProject({ name: 'other', path: 'C:\\dev\\projetos2\\demo' })
+    }
+    const result = filterProjects(projects, {
+      nav: 'all',
+      selectedRoot: 'C:\\dev\\projetos\\',
+      search: '',
+      stack: 'all',
+      runningIds: []
+    })
+    expect(Object.keys(result)).toEqual(['a'])
+  })
+
+  it('scopes to a selected root folder case-insensitively', () => {
+    const projects = {
+      a: makeProject({ path: 'c:\\dev\\projetos\\demo' })
+    }
+    const result = filterProjects(projects, {
+      nav: 'all',
+      selectedRoot: 'C:\\Dev\\Projetos',
+      search: '',
+      stack: 'all',
+      runningIds: []
+    })
+    expect(Object.keys(result)).toEqual(['a'])
+  })
+
   it('combines search and stack filters with the active nav', () => {
     const projects = {
       a: makeProject({ name: 'api-financas', stack: 'node' }),

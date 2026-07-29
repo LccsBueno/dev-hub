@@ -12,7 +12,7 @@ export interface FilterCriteria {
 
 function isUnderRoot(path: string, root: string): boolean {
   const prefix = root.endsWith('\\') ? root : `${root}\\`
-  return path.startsWith(prefix)
+  return path.toLowerCase().startsWith(prefix.toLowerCase())
 }
 
 export function filterProjects(
