@@ -12,8 +12,12 @@ export default function ArchitectureTab({ projectId }: Props) {
     undefined
   )
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pendingElements = useRef<readonly unknown[] | null>(null)
+  const currentProjectId = useRef(projectId)
 
   useEffect(() => {
+    currentProjectId.current = projectId
+    pendingElements.current = null
     setInitialData(undefined)
     window.api.loadArchitecture(projectId).then((data) => {
       setInitialData(
@@ -23,7 +27,16 @@ export default function ArchitectureTab({ projectId }: Props) {
       )
     })
     return () => {
-      if (saveTimer.current) clearTimeout(saveTimer.current)
+      if (saveTimer.current) {
+        clearTimeout(saveTimer.current)
+        saveTimer.current = null
+      }
+      if (pendingElements.current) {
+        void window.api.saveArchitecture(currentProjectId.current, {
+          elements: pendingElements.current as unknown[]
+        })
+        pendingElements.current = null
+      }
     }
   }, [projectId])
 
@@ -38,8 +51,10 @@ export default function ArchitectureTab({ projectId }: Props) {
         initialData={initialData}
         theme="dark"
         onChange={(elements) => {
+          pendingElements.current = elements as unknown[]
           if (saveTimer.current) clearTimeout(saveTimer.current)
           saveTimer.current = setTimeout(() => {
+            pendingElements.current = null
             void window.api.saveArchitecture(projectId, {
               elements: elements as unknown as { elements: unknown[] }['elements']
             })
