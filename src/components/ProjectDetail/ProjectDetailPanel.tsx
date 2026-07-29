@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { X } from 'lucide-react'
+import { Archive, Star, X } from 'lucide-react'
 import type { ProjectConfig, RunMode } from '../../types'
-import { animatePanelClose, animatePanelOpen, animateTabContent } from '../../lib/motion'
+import { animateTabContent, usePressAnimation } from '../../lib/motion'
 import InfoTab from './InfoTab'
 import NotesTab from './NotesTab'
 import GitTab from './GitTab'
@@ -25,6 +25,8 @@ interface Props {
   onTagsChange: (id: string, tags: string[]) => void
   onNotesChange: (id: string, notes: string) => void
   onRunModeChange: (id: string, runMode: RunMode) => void
+  onTogglePinned: (id: string, pinned: boolean) => void
+  onToggleHidden: (id: string, hidden: boolean) => void
 }
 
 function TabContent({ tabId, children }: { tabId: TabId; children: ReactNode }) {
@@ -48,32 +50,20 @@ export default function ProjectDetailPanel({
   onCommandChange,
   onTagsChange,
   onNotesChange,
-  onRunModeChange
+  onRunModeChange,
+  onTogglePinned,
+  onToggleHidden
 }: Props) {
-  const [displayId, setDisplayId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<TabId>('info')
-  const panelRef = useRef<HTMLDivElement>(null)
-  const backdropRef = useRef<HTMLDivElement>(null)
-  const open = projectId !== null
+  const closeBtn = usePressAnimation<HTMLButtonElement>()
+  const starBtn = usePressAnimation<HTMLButtonElement>()
+  const archiveBtn = usePressAnimation<HTMLButtonElement>()
 
   useEffect(() => {
-    if (projectId) {
-      setDisplayId(projectId)
-      setActiveTab('info')
-    }
+    setActiveTab('info')
   }, [projectId])
 
   useEffect(() => {
-    if (!panelRef.current || !backdropRef.current) return
-    if (open) {
-      animatePanelOpen(panelRef.current, backdropRef.current)
-    } else {
-      animatePanelClose(panelRef.current, backdropRef.current)
-    }
-  }, [open])
-
-  useEffect(() => {
-    if (!open) return
     const handleKey = (e: KeyboardEvent): void => {
       if (e.key === 'Escape') {
         ;(document.activeElement as HTMLElement | null)?.blur()
@@ -82,78 +72,102 @@ export default function ProjectDetailPanel({
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
-  }, [open, onClose])
+  }, [onClose])
 
-  useEffect(() => {
-    if (open && displayId && !projects[displayId]) onClose()
-  }, [open, displayId, projects, onClose])
+  const project = projectId ? projects[projectId] : null
 
-  const project = displayId ? projects[displayId] : null
+  if (!project || !projectId) {
+    return (
+      <aside className="flex w-[336px] shrink-0 flex-col items-center justify-center border-l border-border bg-bg px-6 text-center">
+        <p className="text-sm text-muted">Selecione um projeto para ver detalhes</p>
+      </aside>
+    )
+  }
 
   return (
-    <>
-      <div
-        ref={backdropRef}
-        onClick={onClose}
-        inert={!open}
-        className={`fixed inset-0 z-40 bg-black/60 opacity-0 ${open ? '' : 'pointer-events-none'}`}
-      />
-      <div
-        ref={panelRef}
-        inert={!open}
-        className={`fixed inset-y-0 right-0 z-50 flex w-[480px] translate-x-full flex-col border-l border-border bg-card opacity-0 shadow-panel ${
-          open ? '' : 'pointer-events-none'
-        }`}
-      >
-        {project && displayId && (
-          <>
-            <div className="flex items-center justify-between border-b border-border px-5 py-4">
-              <h2 className="truncate font-serif text-lg font-medium">{project.name}</h2>
-              <button
-                onClick={onClose}
-                title="Fechar"
-                className="flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-border hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            <div className="flex border-b border-border px-5">
-              {tabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`relative px-3 py-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ${
-                    activeTab === tab.id ? 'text-white' : 'text-muted hover:text-white'
-                  }`}
-                >
-                  {tab.label}
-                  {activeTab === tab.id && (
-                    <span className="absolute right-0 bottom-0 left-0 h-0.5 bg-accent" />
-                  )}
-                </button>
-              ))}
-            </div>
-
-            <TabContent key={activeTab} tabId={activeTab}>
-              {activeTab === 'info' && (
-                <InfoTab
-                  projectId={displayId}
-                  project={project}
-                  onCommandChange={onCommandChange}
-                  onTagsChange={onTagsChange}
-                  onRunModeChange={onRunModeChange}
-                />
-              )}
-              {activeTab === 'notes' && (
-                <NotesTab projectId={displayId} project={project} onNotesChange={onNotesChange} />
-              )}
-              {activeTab === 'git' && <GitTab projectPath={project.path} />}
-              {activeTab === 'logs' && <LogsTab projectId={displayId} projectPath={project.path} />}
-            </TabContent>
-          </>
-        )}
+    <aside className="flex w-[336px] shrink-0 flex-col border-l border-border bg-bg">
+      <div className="flex items-center justify-between border-b border-border px-5 py-4">
+        <h2 className="truncate text-lg font-medium">{project.name}</h2>
+        <div className="flex items-center gap-1">
+          <button
+            ref={starBtn.ref}
+            onPointerDown={starBtn.onPointerDown}
+            onPointerUp={starBtn.onPointerUp}
+            onPointerLeave={starBtn.onPointerLeave}
+            onClick={() => onTogglePinned(projectId, !project.pinned)}
+            title={project.pinned ? 'Remover dos favoritos' : 'Favoritar'}
+            aria-pressed={project.pinned}
+            type="button"
+            className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ${
+              project.pinned ? 'text-accent' : 'text-muted hover:bg-border hover:text-white'
+            }`}
+          >
+            <Star size={16} fill={project.pinned ? 'currentColor' : 'none'} />
+          </button>
+          <button
+            ref={archiveBtn.ref}
+            onPointerDown={archiveBtn.onPointerDown}
+            onPointerUp={archiveBtn.onPointerUp}
+            onPointerLeave={archiveBtn.onPointerLeave}
+            onClick={() => onToggleHidden(projectId, !project.hidden)}
+            title={project.hidden ? 'Desarquivar' : 'Arquivar'}
+            aria-pressed={project.hidden}
+            type="button"
+            className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ${
+              project.hidden ? 'text-accent' : 'text-muted hover:bg-border hover:text-white'
+            }`}
+          >
+            <Archive size={16} />
+          </button>
+          <button
+            ref={closeBtn.ref}
+            onPointerDown={closeBtn.onPointerDown}
+            onPointerUp={closeBtn.onPointerUp}
+            onPointerLeave={closeBtn.onPointerLeave}
+            onClick={onClose}
+            title="Fechar"
+            type="button"
+            className="flex h-8 w-8 items-center justify-center rounded-lg text-muted transition-colors hover:bg-border hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+          >
+            <X size={16} />
+          </button>
+        </div>
       </div>
-    </>
+
+      <div className="flex border-b border-border px-5">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setActiveTab(tab.id)}
+            className={`relative px-3 py-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ${
+              activeTab === tab.id ? 'text-white' : 'text-muted hover:text-white'
+            }`}
+          >
+            {tab.label}
+            {activeTab === tab.id && (
+              <span className="absolute right-0 bottom-0 left-0 h-0.5 bg-accent" />
+            )}
+          </button>
+        ))}
+      </div>
+
+      <TabContent key={activeTab} tabId={activeTab}>
+        {activeTab === 'info' && (
+          <InfoTab
+            projectId={projectId}
+            project={project}
+            onCommandChange={onCommandChange}
+            onTagsChange={onTagsChange}
+            onRunModeChange={onRunModeChange}
+          />
+        )}
+        {activeTab === 'notes' && (
+          <NotesTab projectId={projectId} project={project} onNotesChange={onNotesChange} />
+        )}
+        {activeTab === 'git' && <GitTab projectPath={project.path} />}
+        {activeTab === 'logs' && <LogsTab projectId={projectId} projectPath={project.path} />}
+      </TabContent>
+    </aside>
   )
 }
