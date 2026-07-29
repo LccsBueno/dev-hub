@@ -6,22 +6,23 @@ interface Props {
   running: Record<string, number>
   onSelect: (id: string) => void
   onCommandChange: (id: string, command: string) => void
+  onTogglePinned: (id: string, pinned: boolean) => void
 }
 
-export default function ProjectGrid({ projects, running, onSelect, onCommandChange }: Props) {
-  const entries = Object.entries(projects)
-    .filter(([, p]) => !p.hidden)
-    .sort(([, a], [, b]) => {
-      if (a.pinned !== b.pinned) return a.pinned ? -1 : 1
-      return a.name.localeCompare(b.name)
-    })
+export default function ProjectGrid({
+  projects,
+  running,
+  onSelect,
+  onCommandChange,
+  onTogglePinned
+}: Props) {
+  const entries = Object.entries(projects).sort(([, a], [, b]) => {
+    if (a.pinned !== b.pinned) return a.pinned ? -1 : 1
+    return a.name.localeCompare(b.name)
+  })
 
   if (entries.length === 0) {
-    return (
-      <p className="mt-12 text-center text-sm text-muted">
-        Nenhum projeto encontrado. Adicione pastas-raiz em Configurações.
-      </p>
-    )
+    return <p className="mt-12 text-center text-sm text-muted">Nenhum projeto encontrado por aqui.</p>
   }
 
   return (
@@ -34,6 +35,7 @@ export default function ProjectGrid({ projects, running, onSelect, onCommandChan
           runningSince={running[id]}
           onSelect={onSelect}
           onCommandChange={onCommandChange}
+          onTogglePinned={onTogglePinned}
         />
       ))}
     </div>
