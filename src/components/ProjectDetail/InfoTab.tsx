@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Check, Copy, FileText, Folder, Plus, X } from 'lucide-react'
 import type { ProjectConfig, RunMode } from '../../types'
 import { dockerRunCommand } from '../../lib/dockerCommand'
-import { stackColors } from '../../lib/stackColors'
+import { stackColors, stackTechs } from '../../lib/stackColors'
 
 interface DirEntry {
   name: string
@@ -65,25 +65,21 @@ export default function InfoTab({
     <div className="flex flex-col gap-6 p-5">
       <section>
         <h3 className="mb-2 text-xs font-medium text-muted">Stack</h3>
-        {(() => {
-          const color = stackColors[project.stack]
-          return (
+        <div className="flex flex-wrap gap-1.5">
+          {(stackTechs[project.stack] ?? [{ label: project.stack, color: stackColors[project.stack] ?? '#94a3b8' }]).map((tech) => (
             <span
-              style={
-                color
-                  ? {
-                      backgroundColor: `color-mix(in srgb, ${color} 18%, transparent)`,
-                      color,
-                      borderColor: `color-mix(in srgb, ${color} 45%, transparent)`
-                    }
-                  : undefined
-              }
-              className={`inline-block rounded-full border px-2 py-0.5 text-xs ${color ? '' : 'border-border text-muted'}`}
+              key={tech.label}
+              style={{
+                backgroundColor: `color-mix(in srgb, ${tech.color} 18%, transparent)`,
+                color: tech.color,
+                borderColor: `color-mix(in srgb, ${tech.color} 45%, transparent)`
+              }}
+              className="inline-block rounded-full border px-2 py-0.5 text-xs"
             >
-              {project.stack}
+              {tech.label}
             </span>
-          )
-        })()}
+          ))}
+        </div>
       </section>
 
       <section>

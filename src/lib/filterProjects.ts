@@ -25,6 +25,8 @@ export function filterProjects(
 
   return Object.fromEntries(
     Object.entries(projects).filter(([id, p]) => {
+      if (p.missing) return false
+
       if (criteria.nav === 'archived') {
         if (!p.hidden) return false
       } else if (p.hidden) {
