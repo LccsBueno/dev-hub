@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Code2, Container, Folder, Play, Square, Star } from 'lucide-react'
 import type { ProjectConfig } from '../types'
 import { useHoverLift, usePressAnimation } from '../lib/motion'
+import { stackColors } from '../lib/stackColors'
 
 interface Props {
   id: string
@@ -94,9 +95,25 @@ export default function ProjectCard({
       </div>
 
       <div className="mb-3 flex items-center gap-2">
-        <span className="rounded-full border border-border px-2 py-0.5 text-xs text-muted">
-          {project.stack}
-        </span>
+        {(() => {
+          const color = stackColors[project.stack]
+          return (
+            <span
+              style={
+                color
+                  ? {
+                      backgroundColor: `color-mix(in srgb, ${color} 18%, transparent)`,
+                      color,
+                      borderColor: `color-mix(in srgb, ${color} 45%, transparent)`
+                    }
+                  : undefined
+              }
+              className={`rounded-full border px-2 py-0.5 text-xs ${color ? '' : 'border-border text-muted'}`}
+            >
+              {project.stack}
+            </span>
+          )
+        })()}
       </div>
 
       <div className="mb-3 flex items-center gap-2 text-xs text-muted">

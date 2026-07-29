@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { AlertTriangle, Archive, Code2, Folder, Play, Square, Star, X } from 'lucide-react'
 import type { ProjectConfig, RunMode } from '../../types'
+import { stackColors } from '../../lib/stackColors'
 import {
   animateDetailPanelEnter,
   animateDetailPanelExit,
@@ -204,9 +205,25 @@ export default function ProjectDetailPanel({
               {isRunning ? 'rodando' : 'parado'}
             </span>
           )}
-          <span className="rounded-full border border-border px-2 py-0.5 text-xs text-muted">
-            {project.stack}
-          </span>
+          {(() => {
+            const color = stackColors[project.stack]
+            return (
+              <span
+                style={
+                  color
+                    ? {
+                        backgroundColor: `color-mix(in srgb, ${color} 18%, transparent)`,
+                        color,
+                        borderColor: `color-mix(in srgb, ${color} 45%, transparent)`
+                      }
+                    : undefined
+                }
+                className={`rounded-full border px-2 py-0.5 text-xs ${color ? '' : 'border-border text-muted'}`}
+              >
+                {project.stack}
+              </span>
+            )
+          })()}
         </div>
 
         <div className="mt-3 rounded-lg border border-border p-2">

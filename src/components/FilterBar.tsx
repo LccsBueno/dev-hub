@@ -1,4 +1,5 @@
 import type { Stack } from '../types'
+import { stackColors } from '../lib/stackColors'
 
 const STACK_ORDER: (Stack | 'all')[] = ['all', 'node', 'maven', 'rust', 'go', 'python', 'unknown']
 
@@ -12,15 +13,6 @@ const stackLabels: Record<Stack | 'all', string> = {
   go: 'Go',
   python: 'Python',
   unknown: 'Outro'
-}
-
-const stackColors: Partial<Record<Stack, string>> = {
-  node: '#4ade80',
-  maven: '#f87171',
-  rust: '#fb923c',
-  go: '#38bdf8',
-  python: '#facc15',
-  unknown: '#94a3b8'
 }
 
 interface Props {

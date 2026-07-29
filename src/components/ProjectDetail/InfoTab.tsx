@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Plus, X } from 'lucide-react'
 import type { ProjectConfig, RunMode } from '../../types'
 import { dockerRunCommand } from '../../lib/dockerCommand'
+import { stackColors } from '../../lib/stackColors'
 
 interface Props {
   projectId: string
@@ -48,9 +49,25 @@ export default function InfoTab({
     <div className="flex flex-col gap-6 p-5">
       <section>
         <h3 className="mb-2 text-xs font-medium text-muted">Stack</h3>
-        <span className="inline-block rounded-full border border-border px-2 py-0.5 text-xs text-muted">
-          {project.stack}
-        </span>
+        {(() => {
+          const color = stackColors[project.stack]
+          return (
+            <span
+              style={
+                color
+                  ? {
+                      backgroundColor: `color-mix(in srgb, ${color} 18%, transparent)`,
+                      color,
+                      borderColor: `color-mix(in srgb, ${color} 45%, transparent)`
+                    }
+                  : undefined
+              }
+              className={`inline-block rounded-full border px-2 py-0.5 text-xs ${color ? '' : 'border-border text-muted'}`}
+            >
+              {project.stack}
+            </span>
+          )
+        })()}
       </section>
 
       <section>
