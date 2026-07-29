@@ -54,7 +54,8 @@ export function mergeProjects(
         tags: prev.tags ?? [],
         notes: prev.notes ?? '',
         hasDockerfile: s.hasDockerfile,
-        runMode: s.hasDockerfile ? (prev.runMode ?? 'native') : 'native'
+        runMode: s.hasDockerfile ? (prev.runMode ?? 'native') : 'native',
+        lastModifiedAt: s.lastModifiedAt
       }
     } else {
       merged[s.id] = {
@@ -68,7 +69,8 @@ export function mergeProjects(
         tags: [],
         notes: '',
         hasDockerfile: s.hasDockerfile,
-        runMode: 'native'
+        runMode: 'native',
+        lastModifiedAt: s.lastModifiedAt
       }
     }
   }

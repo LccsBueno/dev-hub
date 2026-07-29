@@ -22,6 +22,17 @@ function elapsedLabel(since: number, now: number): string {
   return `rodando há ${Math.floor(minutes / 60)}h${minutes % 60}m`
 }
 
+function modifiedLabel(ts: number): string {
+  const diff = Date.now() - ts
+  const days = Math.floor(diff / 86400000)
+  if (days === 0) return 'hoje'
+  if (days === 1) return 'ontem'
+  if (days < 7) return `há ${days} dias`
+  if (days < 30) return `há ${Math.floor(days / 7)} sem.`
+  if (days < 365) return `há ${Math.floor(days / 30)} meses`
+  return `há ${Math.floor(days / 365)} ano${Math.floor(days / 365) > 1 ? 's' : ''}`
+}
+
 export default function ProjectCard({
   id,
   project,
@@ -163,7 +174,8 @@ export default function ProjectCard({
         />
       )}
 
-      <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+      <div className="flex items-center justify-between" onClick={(e) => e.stopPropagation()}>
+      <div className="flex items-center gap-2">
         <button
           ref={runBtn.ref}
           onPointerDown={runBtn.onPointerDown}
@@ -204,6 +216,12 @@ export default function ProjectCard({
         >
           <Code2 size={14} />
         </button>
+      </div>
+      {project.lastModifiedAt ? (
+        <span className="text-[10px] text-muted/60" title="Última modificação da pasta">
+          {modifiedLabel(project.lastModifiedAt)}
+        </span>
+      ) : null}
       </div>
     </div>
   )

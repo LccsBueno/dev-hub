@@ -19,6 +19,7 @@ export interface ProjectConfig {
   hidden: boolean
   missing?: boolean
   lastRunAt?: string
+  lastModifiedAt?: number
   tags: string[]
   notes: string
   hasDockerfile: boolean
@@ -39,6 +40,7 @@ export interface ScannedProject {
   stack: Stack
   suggestedCommand: string
   hasDockerfile: boolean
+  lastModifiedAt: number
 }
 
 export type ProcessStatus = 'running' | 'stopped'

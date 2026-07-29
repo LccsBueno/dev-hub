@@ -67,7 +67,8 @@ describe('mergeProjects', () => {
     path: 'C:\\dev\\demo',
     stack: 'node',
     suggestedCommand: 'npm run dev',
-    hasDockerfile: false
+    hasDockerfile: false,
+    lastModifiedAt: 1700000000000
   }
 
   it('adds new projects with the suggested command and empty tags/notes', () => {
@@ -83,7 +84,8 @@ describe('mergeProjects', () => {
       tags: [],
       notes: '',
       hasDockerfile: false,
-      runMode: 'native'
+      runMode: 'native',
+      lastModifiedAt: 1700000000000
     })
   })
 

@@ -47,13 +47,20 @@ export function detectStack(dir: string): Detection | null {
 function scanEntry(dir: string): ScannedProject | null {
   const detection = detectStack(dir)
   if (!detection) return null
+  let lastModifiedAt = 0
+  try {
+    lastModifiedAt = statSync(dir).mtimeMs
+  } catch {
+    // ignore
+  }
   return {
     id: projectId(dir),
     name: basename(dir),
     path: dir,
     stack: detection.stack,
     suggestedCommand: detection.suggestedCommand,
-    hasDockerfile: existsSync(join(dir, 'Dockerfile'))
+    hasDockerfile: existsSync(join(dir, 'Dockerfile')),
+    lastModifiedAt
   }
 }
 
