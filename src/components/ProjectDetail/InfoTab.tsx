@@ -1,18 +1,7 @@
 import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
-import type { ProjectConfig, RunMode, Stack } from '../../types'
+import type { ProjectConfig, RunMode } from '../../types'
 import { dockerRunCommand } from '../../lib/dockerCommand'
-
-const stackColors: Record<Stack, string> = {
-  node: 'bg-green-500/15 text-green-400',
-  maven: 'bg-orange-500/15 text-orange-400',
-  gradle: 'bg-cyan-500/15 text-cyan-400',
-  compose: 'bg-blue-500/15 text-blue-400',
-  rust: 'bg-amber-500/15 text-amber-400',
-  go: 'bg-sky-500/15 text-sky-400',
-  python: 'bg-yellow-500/15 text-yellow-400',
-  unknown: 'bg-neutral-500/15 text-neutral-400'
-}
 
 interface Props {
   projectId: string
@@ -57,7 +46,7 @@ export default function InfoTab({
     <div className="flex flex-col gap-6 p-5">
       <section>
         <h3 className="mb-2 text-xs font-medium text-muted">Stack</h3>
-        <span className={`inline-block rounded-full px-2 py-0.5 text-xs ${stackColors[project.stack]}`}>
+        <span className="inline-block rounded-full border border-border px-2 py-0.5 text-xs text-muted">
           {project.stack}
         </span>
       </section>

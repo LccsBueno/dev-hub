@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { GitBranch, RefreshCw } from 'lucide-react'
+import { GitBranch, GitCommit, RefreshCw } from 'lucide-react'
 import { emptyGitInfo, type GitInfo } from '../../types'
 
 interface Props {
@@ -76,11 +76,14 @@ export default function GitTab({ projectPath }: Props) {
             <p className="text-xs text-muted">Nenhum commit ainda.</p>
           ) : (
             info.commits.map((commit) => (
-              <div key={commit.hash} className="rounded-md border border-border p-2">
-                <p className="truncate text-xs text-neutral-200">{commit.message}</p>
-                <p className="mt-1 font-mono text-[11px] text-muted">
-                  {commit.hash} · {commit.author} · {commit.relativeDate}
-                </p>
+              <div key={commit.hash} className="flex items-start gap-2 rounded-md border border-border p-2">
+                <GitCommit size={13} className="mt-0.5 shrink-0 text-accent-2" />
+                <div className="min-w-0">
+                  <p className="truncate text-xs text-neutral-200">{commit.message}</p>
+                  <p className="mt-1 font-mono text-[11px] text-muted">
+                    {commit.hash} · {commit.author} · {commit.relativeDate}
+                  </p>
+                </div>
               </div>
             ))
           )}
