@@ -53,7 +53,10 @@ export class ProcessManager {
 
   run(id: string, command: string, cwd: string): void {
     if (this.procs.has(id)) return
-    const child = spawn(command, { shell: true, cwd })
+    const child =
+      process.platform === 'win32'
+        ? spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', command], { cwd })
+        : spawn(command, { shell: true, cwd })
     this.procs.set(id, child)
     this.emitStatus(id, 'running')
 
