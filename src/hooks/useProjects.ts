@@ -38,6 +38,16 @@ export function useProjects() {
     setConfig(await window.api.getConfig())
   }, [])
 
+  const updatePinned = useCallback(async (id: string, pinned: boolean) => {
+    await window.api.updatePinned(id, pinned)
+    setConfig(await window.api.getConfig())
+  }, [])
+
+  const updateHidden = useCallback(async (id: string, hidden: boolean) => {
+    await window.api.updateHidden(id, hidden)
+    setConfig(await window.api.getConfig())
+  }, [])
+
   const updateRootFolders = useCallback(
     async (folders: string[]) => {
       await window.api.updateRootFolders(folders)
@@ -59,6 +69,8 @@ export function useProjects() {
     updateTags,
     updateNotes,
     updateRunMode,
+    updatePinned,
+    updateHidden,
     updateRootFolders,
     updateEditorCommand
   }

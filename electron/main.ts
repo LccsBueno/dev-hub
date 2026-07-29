@@ -120,6 +120,22 @@ function registerIpc(): void {
     saveConfig(configPath(), cfg)
   })
 
+  ipcMain.handle('config:updatePinned', (_e, id: string, pinned: boolean) => {
+    const cfg = loadConfig(configPath())
+    const project = cfg.projects[id]
+    if (!project) return
+    project.pinned = pinned
+    saveConfig(configPath(), cfg)
+  })
+
+  ipcMain.handle('config:updateHidden', (_e, id: string, hidden: boolean) => {
+    const cfg = loadConfig(configPath())
+    const project = cfg.projects[id]
+    if (!project) return
+    project.hidden = hidden
+    saveConfig(configPath(), cfg)
+  })
+
   ipcMain.handle('git:info', (_e, path: string) => {
     if (!isKnownProjectPath(path)) return emptyGitInfo
     return getGitInfo(path)

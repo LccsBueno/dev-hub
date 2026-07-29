@@ -11,6 +11,8 @@ declare global {
       updateTags(id: string, tags: string[]): Promise<void>
       updateNotes(id: string, notes: string): Promise<void>
       updateRunMode(id: string, runMode: 'native' | 'docker'): Promise<void>
+      updatePinned(id: string, pinned: boolean): Promise<void>
+      updateHidden(id: string, hidden: boolean): Promise<void>
       getGitInfo(path: string): Promise<GitInfo>
       checkRootFolders(): Promise<RootFolderStatus[]>
       pickFolder(): Promise<string | null>

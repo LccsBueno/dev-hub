@@ -11,6 +11,8 @@ const api = {
   updateNotes: (id: string, notes: string) => ipcRenderer.invoke('config:updateNotes', id, notes),
   updateRunMode: (id: string, runMode: 'native' | 'docker') =>
     ipcRenderer.invoke('config:updateRunMode', id, runMode),
+  updatePinned: (id: string, pinned: boolean) => ipcRenderer.invoke('config:updatePinned', id, pinned),
+  updateHidden: (id: string, hidden: boolean) => ipcRenderer.invoke('config:updateHidden', id, hidden),
   getGitInfo: (path: string) => ipcRenderer.invoke('git:info', path),
   checkRootFolders: () => ipcRenderer.invoke('config:checkRoots'),
   pickFolder: () => ipcRenderer.invoke('dialog:pickFolder'),
