@@ -29,6 +29,7 @@ export interface Config {
   rootFolders: string[]
   editorCommand: string
   projects: Record<string, ProjectConfig>
+  tagColors: Record<string, string>
 }
 
 export interface ScannedProject {

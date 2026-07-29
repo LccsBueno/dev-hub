@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Code2, Container, Folder, Play, Square, Star } from 'lucide-react'
 import type { ProjectConfig } from '../types'
-import { usePressAnimation } from '../lib/motion'
+import { useHoverLift, usePressAnimation } from '../lib/motion'
 
 interface Props {
   id: string
   project: ProjectConfig
   runningSince?: number
   selected?: boolean
+  tagColors: Record<string, string>
   onSelect: (id: string) => void
   onCommandChange: (id: string, command: string) => void
   onTogglePinned: (id: string, pinned: boolean) => void
@@ -25,6 +26,7 @@ export default function ProjectCard({
   project,
   runningSince,
   selected,
+  tagColors,
   onSelect,
   onCommandChange,
   onTogglePinned
@@ -36,6 +38,7 @@ export default function ProjectCard({
   const folderBtn = usePressAnimation<HTMLButtonElement>()
   const editorBtn = usePressAnimation<HTMLButtonElement>()
   const starBtn = usePressAnimation<HTMLButtonElement>()
+  const hoverLift = useHoverLift<HTMLDivElement>()
 
   useEffect(() => setCommand(project.runCommand), [project.runCommand])
 
@@ -52,11 +55,14 @@ export default function ProjectCard({
 
   return (
     <div
+      ref={hoverLift.ref}
+      onPointerEnter={hoverLift.onPointerEnter}
+      onPointerLeave={hoverLift.onPointerLeave}
       onClick={() => onSelect(id)}
-      className={`group relative cursor-pointer rounded-2xl border p-5 transition-[background-color,box-shadow] ${
+      className={`group relative cursor-pointer rounded-lg border p-5 transition-[background-color,box-shadow] ${
         running
-          ? 'border-accent bg-accent/10 hover:bg-accent/15'
-          : 'border-border bg-card hover:bg-card-hover hover:shadow-card-hover'
+          ? 'border-accent bg-accent/12 hover:bg-accent/16'
+          : 'border-transparent bg-card hover:bg-card-hover'
       } ${project.missing ? 'opacity-40' : ''} ${selected ? 'ring-2 ring-accent ring-offset-2 ring-offset-bg' : ''}`}
     >
       <button
@@ -102,11 +108,22 @@ export default function ProjectCard({
 
       {project.tags.length > 0 && (
         <div className="mb-3 flex flex-wrap items-center gap-1">
-          {project.tags.slice(0, 3).map((tag) => (
-            <span key={tag} className="rounded-full bg-bg px-2 py-0.5 text-[11px] text-neutral-400">
-              {tag}
-            </span>
-          ))}
+          {project.tags.slice(0, 3).map((tag) => {
+            const color = tagColors[tag]
+            return (
+              <span
+                key={tag}
+                style={
+                  color
+                    ? { backgroundColor: `color-mix(in srgb, ${color} 20%, transparent)`, color }
+                    : undefined
+                }
+                className={`rounded-full px-2 py-0.5 text-[11px] ${color ? '' : 'bg-bg text-neutral-400'}`}
+              >
+                {tag}
+              </span>
+            )
+          })}
           {project.tags.length > 3 && (
             <span className="text-[11px] text-muted">+{project.tags.length - 3}</span>
           )}

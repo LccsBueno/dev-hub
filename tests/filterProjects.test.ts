@@ -33,6 +33,7 @@ describe('filterProjects', () => {
         selectedRoot: null,
         search: '',
         stack: 'all',
+        tag: null,
         runningIds: ['b']
       })
       expect(Object.keys(result)).toEqual(['b'])
@@ -46,6 +47,7 @@ describe('filterProjects', () => {
       selectedRoot: null,
       search: '',
       stack: 'all',
+      tag: null,
       runningIds: []
     })
     expect(Object.keys(result)).toEqual(['a'])
@@ -58,6 +60,7 @@ describe('filterProjects', () => {
       selectedRoot: null,
       search: '',
       stack: 'all',
+      tag: null,
       runningIds: ['a']
     })
     expect(Object.keys(result)).toEqual(['a'])
@@ -70,6 +73,7 @@ describe('filterProjects', () => {
       selectedRoot: null,
       search: '',
       stack: 'all',
+      tag: null,
       runningIds: []
     })
     expect(Object.keys(result)).toEqual(['a'])
@@ -85,6 +89,7 @@ describe('filterProjects', () => {
       selectedRoot: 'C:\\dev\\projetos',
       search: '',
       stack: 'all',
+      tag: null,
       runningIds: []
     })
     expect(Object.keys(result)).toEqual(['a'])
@@ -100,6 +105,7 @@ describe('filterProjects', () => {
       selectedRoot: 'C:\\dev\\projetos\\',
       search: '',
       stack: 'all',
+      tag: null,
       runningIds: []
     })
     expect(Object.keys(result)).toEqual(['a'])
@@ -114,6 +120,7 @@ describe('filterProjects', () => {
       selectedRoot: 'C:\\Dev\\Projetos',
       search: '',
       stack: 'all',
+      tag: null,
       runningIds: []
     })
     expect(Object.keys(result)).toEqual(['a'])
@@ -130,9 +137,43 @@ describe('filterProjects', () => {
       selectedRoot: null,
       search: 'api',
       stack: 'node',
+      tag: null,
       runningIds: []
     })
     expect(Object.keys(result)).toEqual(['a'])
+  })
+
+  it('tag filter shows only projects carrying that exact tag', () => {
+    const projects = {
+      a: makeProject({ name: 'client-x-api', tags: ['client-x', 'backend'] }),
+      b: makeProject({ name: 'client-y-api', tags: ['client-y'] }),
+      c: makeProject({ name: 'internal-tool', tags: [] })
+    }
+    const result = filterProjects(projects, {
+      nav: 'all',
+      selectedRoot: null,
+      search: '',
+      stack: 'all',
+      tag: 'client-x',
+      runningIds: []
+    })
+    expect(Object.keys(result)).toEqual(['a'])
+  })
+
+  it('a null tag applies no tag filtering', () => {
+    const projects = {
+      a: makeProject({ tags: ['x'] }),
+      b: makeProject({ name: 'other', tags: [] })
+    }
+    const result = filterProjects(projects, {
+      nav: 'all',
+      selectedRoot: null,
+      search: '',
+      stack: 'all',
+      tag: null,
+      runningIds: []
+    })
+    expect(Object.keys(result)).toEqual(['a', 'b'])
   })
 })
 

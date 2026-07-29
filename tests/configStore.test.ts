@@ -16,7 +16,7 @@ beforeEach(() => {
 describe('loadConfig', () => {
   it('returns defaults when file does not exist', () => {
     const cfg = loadConfig(file)
-    expect(cfg).toEqual({ rootFolders: [], editorCommand: 'code', projects: {} })
+    expect(cfg).toEqual({ rootFolders: [], editorCommand: 'code', projects: {}, tagColors: {} })
   })
 
   it('returns defaults when file is corrupt JSON', () => {
@@ -50,7 +50,8 @@ describe('loadConfig', () => {
           hasDockerfile: true,
           runMode: 'docker'
         }
-      }
+      },
+      tagColors: { tooling: '#78c091' }
     }
     saveConfig(file, cfg)
     expect(loadConfig(file)).toEqual(cfg)

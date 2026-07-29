@@ -13,6 +13,8 @@ declare global {
       updateRunMode(id: string, runMode: 'native' | 'docker'): Promise<void>
       updatePinned(id: string, pinned: boolean): Promise<void>
       updateHidden(id: string, hidden: boolean): Promise<void>
+      setTagColor(tag: string, color: string): Promise<void>
+      deleteTagColor(tag: string): Promise<void>
       getGitInfo(path: string): Promise<GitInfo>
       checkRootFolders(): Promise<RootFolderStatus[]>
       pickFolder(): Promise<string | null>

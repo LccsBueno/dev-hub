@@ -13,6 +13,8 @@ const api = {
     ipcRenderer.invoke('config:updateRunMode', id, runMode),
   updatePinned: (id: string, pinned: boolean) => ipcRenderer.invoke('config:updatePinned', id, pinned),
   updateHidden: (id: string, hidden: boolean) => ipcRenderer.invoke('config:updateHidden', id, hidden),
+  setTagColor: (tag: string, color: string) => ipcRenderer.invoke('config:setTagColor', tag, color),
+  deleteTagColor: (tag: string) => ipcRenderer.invoke('config:deleteTagColor', tag),
   getGitInfo: (path: string) => ipcRenderer.invoke('git:info', path),
   checkRootFolders: () => ipcRenderer.invoke('config:checkRoots'),
   pickFolder: () => ipcRenderer.invoke('dialog:pickFolder'),

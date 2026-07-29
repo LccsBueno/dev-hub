@@ -6,6 +6,7 @@ import { dockerRunCommand } from '../../lib/dockerCommand'
 interface Props {
   projectId: string
   project: ProjectConfig
+  tagColors: Record<string, string>
   onCommandChange: (id: string, command: string) => void
   onTagsChange: (id: string, tags: string[]) => void
   onRunModeChange: (id: string, runMode: RunMode) => void
@@ -14,6 +15,7 @@ interface Props {
 export default function InfoTab({
   projectId,
   project,
+  tagColors,
   onCommandChange,
   onTagsChange,
   onRunModeChange
@@ -101,21 +103,31 @@ export default function InfoTab({
       <section>
         <h3 className="mb-2 text-xs font-medium text-muted">Tags</h3>
         <div className="mb-2 flex flex-wrap gap-1.5">
-          {project.tags.map((tag) => (
-            <span
-              key={tag}
-              className="flex items-center gap-1 rounded-full bg-bg px-2 py-1 text-xs text-neutral-300"
-            >
-              {tag}
-              <button
-                onClick={() => removeTag(tag)}
-                title={`Remover ${tag}`}
-                className="text-muted hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 rounded-full"
+          {project.tags.map((tag) => {
+            const color = tagColors[tag]
+            return (
+              <span
+                key={tag}
+                style={
+                  color
+                    ? { backgroundColor: `color-mix(in srgb, ${color} 20%, transparent)`, color }
+                    : undefined
+                }
+                className={`flex items-center gap-1 rounded-full px-2 py-1 text-xs ${
+                  color ? '' : 'bg-bg text-neutral-300'
+                }`}
               >
-                <X size={10} />
-              </button>
-            </span>
-          ))}
+                {tag}
+                <button
+                  onClick={() => removeTag(tag)}
+                  title={`Remover ${tag}`}
+                  className="rounded-full text-current opacity-70 hover:opacity-100 hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+                >
+                  <X size={10} />
+                </button>
+              </span>
+            )
+          })}
         </div>
         <input
           value={tagInput}

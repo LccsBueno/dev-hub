@@ -7,6 +7,7 @@ export interface FilterCriteria {
   selectedRoot: string | null
   search: string
   stack: Stack | 'all'
+  tag: string | null
   runningIds: string[]
 }
 
@@ -37,6 +38,7 @@ export function filterProjects(
 
       if (search && !p.name.toLowerCase().includes(search)) return false
       if (criteria.stack !== 'all' && p.stack !== criteria.stack) return false
+      if (criteria.tag && !p.tags.includes(criteria.tag)) return false
 
       return true
     })

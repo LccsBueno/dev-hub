@@ -1,14 +1,14 @@
-import { useCallback, useState } from 'react'
-import { RefreshCw } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { RefreshCw, Search } from 'lucide-react'
 import Sidebar, { type View } from './components/Sidebar'
-import SearchBar from './components/SearchBar'
+import FilterBar from './components/FilterBar'
 import ProjectGrid from './components/ProjectGrid'
 import ProjectDetailPanel from './components/ProjectDetail/ProjectDetailPanel'
 import SettingsPanel from './components/SettingsPanel'
 import { ToastProvider } from './components/Toast'
 import { useProjects } from './hooks/useProjects'
 import { useProcessStatus } from './hooks/useProcessStatus'
-import { usePressAnimation } from './lib/motion'
+import { animateViewSwitch, usePressAnimation } from './lib/motion'
 import { filterProjects, type NavFilter } from './lib/filterProjects'
 import type { Stack } from './types'
 
@@ -26,6 +26,7 @@ export default function App() {
   const [search, setSearch] = useState('')
   const [stackFilter, setStackFilter] = useState<Stack | 'all'>('all')
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [tagFilter, setTagFilter] = useState<string | null>(null)
   const {
     config,
     scanning,
@@ -37,19 +38,34 @@ export default function App() {
     updateNotes,
     updateRunMode,
     updatePinned,
-    updateHidden
+    updateHidden,
+    setTagColor,
+    deleteTagColor
   } = useProjects()
   const running = useProcessStatus()
   const closePanel = useCallback(() => setSelectedId(null), [])
   const rescanPress = usePressAnimation<HTMLButtonElement>()
+  const viewContentRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (viewContentRef.current) animateViewSwitch(viewContentRef.current)
+  }, [view])
 
   const filtered = filterProjects(config?.projects ?? {}, {
     nav: selectedRoot ? 'all' : nav,
     selectedRoot,
     search,
     stack: stackFilter,
+    tag: tagFilter,
     runningIds: Object.keys(running)
   })
+
+  const allTags = Array.from(
+    new Set([
+      ...Object.values(config?.projects ?? {}).flatMap((p) => p.tags),
+      ...Object.keys(config?.tagColors ?? {})
+    ])
+  ).sort((a, b) => a.localeCompare(b))
 
   const addFolder = async (): Promise<void> => {
     const picked = await window.api.pickFolder()
@@ -67,9 +83,11 @@ export default function App() {
     await updateRootFolders((config?.rootFolders ?? []).filter((f) => f !== folder))
   }
 
-  const title = selectedRoot
+  const breadcrumb = selectedRoot
     ? (selectedRoot.split(/[\\/]/).filter(Boolean).pop() ?? selectedRoot)
-    : navTitles[nav]
+    : 'Todos os diretórios'
+  const title = selectedRoot ? navTitles.all : navTitles[nav]
+  const hasRoots = (config?.rootFolders.length ?? 0) > 0
 
   return (
     <ToastProvider>
@@ -89,72 +107,102 @@ export default function App() {
             onAddFolder={addFolder}
             onRemoveFolder={removeFolder}
           />
-          <main className="flex-1 overflow-y-auto p-8">
-            {view === 'projects' ? (
-              <>
-                <div className="mb-6 flex items-center justify-between gap-4">
-                  <h1 className="text-2xl font-medium">
-                    {title} <span className="text-muted">· {Object.keys(filtered).length} projetos</span>
-                  </h1>
-                  <button
-                    ref={rescanPress.ref}
-                    onPointerDown={rescanPress.onPointerDown}
-                    onPointerUp={rescanPress.onPointerUp}
-                    onPointerLeave={rescanPress.onPointerLeave}
-                    onClick={rescan}
-                    disabled={scanning || (config !== null && config.rootFolders.length === 0)}
-                    type="button"
-                    className="flex items-center gap-2 rounded-lg border border-accent px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent/10 focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none disabled:opacity-50"
-                  >
-                    <RefreshCw size={16} className={scanning ? 'animate-spin' : ''} />
-                    {scanning ? 'Reescaneando…' : 'Reescanear projetos'}
-                  </button>
-                </div>
-                {config !== null && config.rootFolders.length === 0 && Object.keys(config.projects).length === 0 ? (
-                  <div className="mt-12 flex flex-col items-center gap-3 text-center">
-                    <p className="text-sm text-muted">Nenhum diretório configurado ainda.</p>
-                    <button
-                      onClick={addFolder}
-                      type="button"
-                      className="flex items-center gap-2 rounded-lg border border-accent px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent/10 focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none"
-                    >
-                      Adicionar diretório
-                    </button>
+          <main className="@container flex flex-1 flex-col overflow-hidden">
+            <div key={view} ref={viewContentRef} className="flex flex-1 flex-col overflow-hidden">
+              {view === 'projects' ? (
+                <>
+                  <div className="flex items-start justify-between gap-4 border-b border-border px-7 py-[22px]">
+                    <div>
+                      <p className="mb-0.5 text-xs text-muted">
+                        {breadcrumb} · {Object.keys(filtered).length} projetos
+                      </p>
+                      <h1 className="text-2xl font-medium">{title}</h1>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <div className="relative flex items-center">
+                        <Search size={14} className="pointer-events-none absolute left-2.5 text-muted" />
+                        <input
+                          value={search}
+                          onChange={(e) => setSearch(e.target.value)}
+                          placeholder="Buscar projeto…"
+                          className="w-48 rounded-lg border border-border bg-card py-2 pr-3 pl-8 text-sm outline-none placeholder:text-muted focus:border-accent"
+                        />
+                      </div>
+                      <button
+                        ref={rescanPress.ref}
+                        onPointerDown={rescanPress.onPointerDown}
+                        onPointerUp={rescanPress.onPointerUp}
+                        onPointerLeave={rescanPress.onPointerLeave}
+                        onClick={rescan}
+                        disabled={scanning || (config !== null && !hasRoots)}
+                        type="button"
+                        className="flex items-center gap-2 rounded-lg border border-accent px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent/10 focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none disabled:opacity-50"
+                      >
+                        <RefreshCw size={16} className={scanning ? 'animate-spin' : ''} />
+                        {scanning ? 'Reescaneando…' : 'Reescanear projetos'}
+                      </button>
+                    </div>
                   </div>
-                ) : (
-                  <>
-                    <SearchBar
-                      search={search}
-                      onSearch={setSearch}
-                      stackFilter={stackFilter}
-                      onStackFilter={setStackFilter}
+
+                  {config !== null && !hasRoots && Object.keys(config.projects).length === 0 ? (
+                    <div className="mt-12 flex flex-col items-center gap-3 px-7 text-center">
+                      <p className="text-sm text-muted">Nenhum diretório configurado ainda.</p>
+                      <button
+                        onClick={addFolder}
+                        type="button"
+                        className="flex items-center gap-2 rounded-lg border border-accent px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent/10 focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none"
+                      >
+                        Adicionar diretório
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="border-b border-border px-7 py-3.5">
+                        <FilterBar
+                          stackFilter={stackFilter}
+                          onStackFilter={setStackFilter}
+                          tags={allTags}
+                          tagColors={config?.tagColors ?? {}}
+                          tagFilter={tagFilter}
+                          onTagFilter={setTagFilter}
+                        />
+                      </div>
+                      <div className="flex-1 overflow-y-auto p-7">
+                        <ProjectGrid
+                          projects={filtered}
+                          running={running}
+                          selectedId={selectedId}
+                          tagColors={config?.tagColors ?? {}}
+                          onSelect={setSelectedId}
+                          onCommandChange={updateProjectCommand}
+                          onTogglePinned={updatePinned}
+                        />
+                      </div>
+                    </>
+                  )}
+                </>
+              ) : (
+                <div className="overflow-y-auto p-7">
+                  <h1 className="mb-6 text-2xl font-medium">Configurações</h1>
+                  {config && (
+                    <SettingsPanel
+                      editorCommand={config.editorCommand}
+                      onUpdateEditor={updateEditorCommand}
+                      projects={config.projects}
+                      tagColors={config.tagColors}
+                      onSetTagColor={setTagColor}
+                      onDeleteTagColor={deleteTagColor}
                     />
-                    <ProjectGrid
-                      projects={filtered}
-                      running={running}
-                      selectedId={selectedId}
-                      onSelect={setSelectedId}
-                      onCommandChange={updateProjectCommand}
-                      onTogglePinned={updatePinned}
-                    />
-                  </>
-                )}
-              </>
-            ) : (
-              <>
-                <h1 className="mb-6 text-2xl font-medium">Configurações</h1>
-                {config && (
-                  <SettingsPanel
-                    editorCommand={config.editorCommand}
-                    onUpdateEditor={updateEditorCommand}
-                  />
-                )}
-              </>
-            )}
+                  )}
+                </div>
+              )}
+            </div>
           </main>
           <ProjectDetailPanel
             projectId={selectedId}
             projects={config?.projects ?? {}}
+            running={running}
+            tagColors={config?.tagColors ?? {}}
             onClose={closePanel}
             onCommandChange={updateProjectCommand}
             onTagsChange={updateTags}

@@ -45,7 +45,7 @@ function NavButton({
       onPointerLeave={press.onPointerLeave}
       onClick={onClick}
       className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none ${
-        active ? 'bg-accent/15 text-accent' : 'text-muted hover:bg-card-hover hover:text-white'
+        active ? 'bg-accent/15 text-accent' : 'text-neutral-300 hover:bg-card-hover hover:text-white'
       }`}
     >
       {dot ? (
@@ -76,13 +76,22 @@ function DirectoryRow({
   onSelect: () => void
   onRemove: () => void
 }) {
+  const selectPress = usePressAnimation<HTMLButtonElement>()
+
   return (
     <div
       className={`group flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-sm transition-colors ${
-        active ? 'bg-card-hover text-white' : 'text-muted hover:bg-card-hover hover:text-white'
+        active ? 'bg-card-hover text-white' : 'text-neutral-300 hover:bg-card-hover hover:text-white'
       }`}
     >
-      <button onClick={onSelect} className="flex-1 truncate text-left focus-visible:outline-none">
+      <button
+        ref={selectPress.ref}
+        onPointerDown={selectPress.onPointerDown}
+        onPointerUp={selectPress.onPointerUp}
+        onPointerLeave={selectPress.onPointerLeave}
+        onClick={onSelect}
+        className="flex-1 truncate text-left focus-visible:outline-none"
+      >
         {folder.split(/[\\/]/).filter(Boolean).pop() ?? folder}
         {missing && (
           <AlertTriangle
@@ -126,13 +135,34 @@ export default function Sidebar({
   }, [rootFolders.join('|')])
 
   const runningCount = Object.keys(
-    filterProjects(projects, { nav: 'running', selectedRoot: null, search: '', stack: 'all', runningIds })
+    filterProjects(projects, {
+      nav: 'running',
+      selectedRoot: null,
+      search: '',
+      stack: 'all',
+      tag: null,
+      runningIds
+    })
   ).length
   const favoritesCount = Object.keys(
-    filterProjects(projects, { nav: 'favorites', selectedRoot: null, search: '', stack: 'all', runningIds })
+    filterProjects(projects, {
+      nav: 'favorites',
+      selectedRoot: null,
+      search: '',
+      stack: 'all',
+      tag: null,
+      runningIds
+    })
   ).length
   const archivedCount = Object.keys(
-    filterProjects(projects, { nav: 'archived', selectedRoot: null, search: '', stack: 'all', runningIds })
+    filterProjects(projects, {
+      nav: 'archived',
+      selectedRoot: null,
+      search: '',
+      stack: 'all',
+      tag: null,
+      runningIds
+    })
   ).length
 
   const selectNav = (next: NavFilter): void => {
@@ -147,7 +177,7 @@ export default function Sidebar({
   }
 
   return (
-    <aside className="flex w-52 shrink-0 flex-col border-r border-border bg-bg px-3 py-6">
+    <aside className="flex w-[214px] shrink-0 flex-col border-r border-border bg-bg px-3 py-4">
       <div className="mb-6 flex items-center gap-2 px-2">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-sm font-bold text-bg">
           P

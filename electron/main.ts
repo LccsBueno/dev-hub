@@ -40,6 +40,8 @@ function createWindow(): void {
   win = new BrowserWindow({
     width: 1400,
     height: 900,
+    minWidth: 1040,
+    minHeight: 600,
     backgroundColor: '#252525',
     autoHideMenuBar: true,
     titleBarStyle: 'hidden',
@@ -133,6 +135,18 @@ function registerIpc(): void {
     const project = cfg.projects[id]
     if (!project) return
     project.hidden = hidden
+    saveConfig(configPath(), cfg)
+  })
+
+  ipcMain.handle('config:setTagColor', (_e, tag: string, color: string) => {
+    const cfg = loadConfig(configPath())
+    cfg.tagColors[tag] = color
+    saveConfig(configPath(), cfg)
+  })
+
+  ipcMain.handle('config:deleteTagColor', (_e, tag: string) => {
+    const cfg = loadConfig(configPath())
+    delete cfg.tagColors[tag]
     saveConfig(configPath(), cfg)
   })
 

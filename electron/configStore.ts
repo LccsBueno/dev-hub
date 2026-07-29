@@ -3,7 +3,7 @@ import { dirname } from 'path'
 import type { Config, ProjectConfig, ScannedProject } from '../src/types'
 
 export function defaultConfig(): Config {
-  return { rootFolders: [], editorCommand: 'code', projects: {} }
+  return { rootFolders: [], editorCommand: 'code', projects: {}, tagColors: {} }
 }
 
 export function loadConfig(filePath: string): Config {
@@ -18,6 +18,10 @@ export function loadConfig(filePath: string): Config {
       projects:
         typeof parsed.projects === 'object' && parsed.projects !== null
           ? parsed.projects
+          : {},
+      tagColors:
+        typeof parsed.tagColors === 'object' && parsed.tagColors !== null
+          ? parsed.tagColors
           : {}
     }
   } catch (err) {

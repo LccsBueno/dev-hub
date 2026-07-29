@@ -48,6 +48,16 @@ export function useProjects() {
     setConfig(await window.api.getConfig())
   }, [])
 
+  const setTagColor = useCallback(async (tag: string, color: string) => {
+    await window.api.setTagColor(tag, color)
+    setConfig(await window.api.getConfig())
+  }, [])
+
+  const deleteTagColor = useCallback(async (tag: string) => {
+    await window.api.deleteTagColor(tag)
+    setConfig(await window.api.getConfig())
+  }, [])
+
   const updateRootFolders = useCallback(
     async (folders: string[]) => {
       await window.api.updateRootFolders(folders)
@@ -71,6 +81,8 @@ export function useProjects() {
     updateRunMode,
     updatePinned,
     updateHidden,
+    setTagColor,
+    deleteTagColor,
     updateRootFolders,
     updateEditorCommand
   }

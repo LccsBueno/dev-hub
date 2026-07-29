@@ -5,6 +5,7 @@ interface Props {
   projects: Record<string, ProjectConfig>
   running: Record<string, number>
   selectedId: string | null
+  tagColors: Record<string, string>
   onSelect: (id: string) => void
   onCommandChange: (id: string, command: string) => void
   onTogglePinned: (id: string, pinned: boolean) => void
@@ -14,6 +15,7 @@ export default function ProjectGrid({
   projects,
   running,
   selectedId,
+  tagColors,
   onSelect,
   onCommandChange,
   onTogglePinned
@@ -28,7 +30,7 @@ export default function ProjectGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-3">
+    <div className="grid grid-cols-1 gap-5 @lg:grid-cols-2 @xl:grid-cols-3 @4xl:grid-cols-4">
       {entries.map(([id, project]) => (
         <ProjectCard
           key={id}
@@ -36,6 +38,7 @@ export default function ProjectGrid({
           project={project}
           runningSince={running[id]}
           selected={id === selectedId}
+          tagColors={tagColors}
           onSelect={onSelect}
           onCommandChange={onCommandChange}
           onTogglePinned={onTogglePinned}
