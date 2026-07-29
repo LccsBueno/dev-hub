@@ -28,6 +28,7 @@ interface Props {
   projects: Record<string, ProjectConfig>
   running: Record<string, number>
   tagColors: Record<string, string>
+  allTags: string[]
   onClose: () => void
   onCommandChange: (id: string, command: string) => void
   onTagsChange: (id: string, tags: string[]) => void
@@ -56,6 +57,7 @@ export default function ProjectDetailPanel({
   projects,
   running,
   tagColors,
+  allTags,
   onClose,
   onCommandChange,
   onTagsChange,
@@ -207,7 +209,8 @@ export default function ProjectDetailPanel({
           </span>
         </div>
 
-        <div className="mt-3 grid grid-cols-3 gap-2">
+        <div className="mt-3 rounded-lg border border-border p-2">
+          <div className="grid grid-cols-3 gap-2">
           <button
             ref={runBtn.ref}
             onPointerDown={runBtn.onPointerDown}
@@ -251,6 +254,7 @@ export default function ProjectDetailPanel({
             <Code2 size={16} />
             Editor
           </button>
+          </div>
         </div>
       </div>
 
@@ -276,6 +280,7 @@ export default function ProjectDetailPanel({
           <InfoTab
             projectId={mountedId}
             project={project}
+            allTags={allTags}
             tagColors={tagColors}
             onCommandChange={onCommandChange}
             onTagsChange={onTagsChange}

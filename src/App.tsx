@@ -67,6 +67,10 @@ export default function App() {
     ])
   ).sort((a, b) => a.localeCompare(b))
 
+  const availableStacks = Array.from(
+    new Set(Object.values(config?.projects ?? {}).map((p) => p.stack))
+  )
+
   const addFolder = async (): Promise<void> => {
     const picked = await window.api.pickFolder()
     const current = config?.rootFolders ?? []
@@ -159,6 +163,7 @@ export default function App() {
                     <>
                       <div className="border-b border-border px-7 py-3.5">
                         <FilterBar
+                          availableStacks={availableStacks}
                           stackFilter={stackFilter}
                           onStackFilter={setStackFilter}
                           tags={allTags}
@@ -203,6 +208,7 @@ export default function App() {
             projects={config?.projects ?? {}}
             running={running}
             tagColors={config?.tagColors ?? {}}
+            allTags={allTags}
             onClose={closePanel}
             onCommandChange={updateProjectCommand}
             onTagsChange={updateTags}

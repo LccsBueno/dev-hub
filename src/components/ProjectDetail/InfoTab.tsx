@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
-import { X } from 'lucide-react'
+import { Plus, X } from 'lucide-react'
 import type { ProjectConfig, RunMode } from '../../types'
 import { dockerRunCommand } from '../../lib/dockerCommand'
 
 interface Props {
   projectId: string
   project: ProjectConfig
+  allTags: string[]
   tagColors: Record<string, string>
   onCommandChange: (id: string, command: string) => void
   onTagsChange: (id: string, tags: string[]) => void
@@ -15,34 +16,33 @@ interface Props {
 export default function InfoTab({
   projectId,
   project,
+  allTags,
   tagColors,
   onCommandChange,
   onTagsChange,
   onRunModeChange
 }: Props) {
   const [command, setCommand] = useState(project.runCommand)
-  const [tagInput, setTagInput] = useState('')
+  const [showTagPicker, setShowTagPicker] = useState(false)
 
   useEffect(() => setCommand(project.runCommand), [project.runCommand])
+  useEffect(() => setShowTagPicker(false), [projectId])
 
   const saveCommand = (): void => {
     if (command !== project.runCommand) onCommandChange(projectId, command)
   }
 
-  const addTag = (): void => {
-    const value = tagInput.trim()
-    if (value && !project.tags.includes(value)) {
-      onTagsChange(projectId, [...project.tags, value])
+  const addTag = (tag: string): void => {
+    if (!project.tags.includes(tag)) {
+      onTagsChange(projectId, [...project.tags, tag])
     }
-    setTagInput('')
   }
 
   const removeTag = (tag: string): void => {
-    onTagsChange(
-      projectId,
-      project.tags.filter((t) => t !== tag)
-    )
+    onTagsChange(projectId, project.tags.filter((t) => t !== tag))
   }
+
+  const availableTags = allTags.filter((t) => !project.tags.includes(t))
 
   return (
     <div className="flex flex-col gap-6 p-5">
@@ -102,45 +102,74 @@ export default function InfoTab({
 
       <section>
         <h3 className="mb-2 text-xs font-medium text-muted">Tags</h3>
-        <div className="mb-2 flex flex-wrap gap-1.5">
-          {project.tags.map((tag) => {
-            const color = tagColors[tag]
-            return (
-              <span
-                key={tag}
-                style={
-                  color
-                    ? { backgroundColor: `color-mix(in srgb, ${color} 20%, transparent)`, color }
-                    : undefined
-                }
-                className={`flex items-center gap-1 rounded-full px-2 py-1 text-xs ${
-                  color ? '' : 'bg-bg text-neutral-300'
-                }`}
-              >
-                {tag}
-                <button
-                  onClick={() => removeTag(tag)}
-                  title={`Remover ${tag}`}
-                  className="rounded-full text-current opacity-70 hover:opacity-100 hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+        <div className="rounded-lg border border-border p-3">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {project.tags.map((tag) => {
+              const color = tagColors[tag]
+              return (
+                <span
+                  key={tag}
+                  style={
+                    color
+                      ? { backgroundColor: `color-mix(in srgb, ${color} 20%, transparent)`, color }
+                      : undefined
+                  }
+                  className={`flex items-center gap-1 rounded-full px-2 py-0.5 text-xs ${
+                    color ? '' : 'bg-card text-neutral-300'
+                  }`}
                 >
-                  <X size={10} />
-                </button>
-              </span>
-            )
-          })}
+                  {tag}
+                  <button
+                    onClick={() => removeTag(tag)}
+                    title={`Remover ${tag}`}
+                    className="rounded-full text-current opacity-60 hover:opacity-100 hover:text-red-400 focus-visible:outline-none"
+                  >
+                    <X size={10} />
+                  </button>
+                </span>
+              )
+            })}
+            <button
+              onClick={() => setShowTagPicker(!showTagPicker)}
+              title="Adicionar tag"
+              className={`flex items-center gap-0.5 rounded-full border border-dashed px-2 py-0.5 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ${
+                showTagPicker
+                  ? 'border-accent text-accent'
+                  : 'border-muted text-muted hover:border-white hover:text-white'
+              }`}
+            >
+              <Plus size={10} />
+            </button>
+          </div>
+
+          {showTagPicker && (
+            <div className="mt-3 border-t border-border pt-3">
+              {availableTags.length === 0 ? (
+                <p className="text-[11px] text-muted">
+                  {allTags.length === 0
+                    ? 'Crie tags em Configurações.'
+                    : 'Todas as tags já adicionadas.'}
+                </p>
+              ) : (
+                <div className="flex flex-wrap gap-1.5">
+                  {availableTags.map((tag) => {
+                    const color = tagColors[tag] ?? '#8f8f8f'
+                    return (
+                      <button
+                        key={tag}
+                        onClick={() => addTag(tag)}
+                        style={{ borderColor: color, color }}
+                        className="rounded-full border border-dashed px-2 py-0.5 text-xs transition-opacity hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50"
+                      >
+                        {tag}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </div>
-        <input
-          value={tagInput}
-          onChange={(e) => setTagInput(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault()
-              addTag()
-            }
-          }}
-          placeholder="Adicionar tag…"
-          className="w-full rounded-md border border-border bg-bg px-2 py-1.5 text-xs outline-none focus:border-accent"
-        />
       </section>
     </div>
   )

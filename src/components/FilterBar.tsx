@@ -1,16 +1,6 @@
 import type { Stack } from '../types'
 
-const stacks: (Stack | 'all')[] = [
-  'all',
-  'node',
-  'maven',
-  'gradle',
-  'compose',
-  'rust',
-  'go',
-  'python',
-  'unknown'
-]
+const STACK_ORDER: (Stack | 'all')[] = ['all', 'node', 'maven', 'rust', 'go', 'python', 'unknown']
 
 const stackLabels: Record<Stack | 'all', string> = {
   all: 'Todos',
@@ -24,7 +14,17 @@ const stackLabels: Record<Stack | 'all', string> = {
   unknown: 'Outro'
 }
 
+const stackColors: Partial<Record<Stack, string>> = {
+  node: '#4ade80',
+  maven: '#f87171',
+  rust: '#fb923c',
+  go: '#38bdf8',
+  python: '#facc15',
+  unknown: '#94a3b8'
+}
+
 interface Props {
+  availableStacks: Stack[]
   stackFilter: Stack | 'all'
   onStackFilter: (value: Stack | 'all') => void
   tags: string[]
@@ -34,6 +34,7 @@ interface Props {
 }
 
 export default function FilterBar({
+  availableStacks,
   stackFilter,
   onStackFilter,
   tags,
@@ -41,25 +42,61 @@ export default function FilterBar({
   tagFilter,
   onTagFilter
 }: Props) {
+  const visibleStacks = STACK_ORDER.filter(
+    (s) => s === 'all' || availableStacks.includes(s as Stack)
+  )
+
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-3 rounded-lg border border-border p-3">
       <div role="group" aria-label="Filtrar por stack" className="flex flex-wrap gap-2">
-        {stacks.map((s) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => onStackFilter(s)}
-            aria-pressed={stackFilter === s}
-            className={`rounded-full px-3 py-1 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ${
-              stackFilter === s
-                ? 'bg-accent/15 text-accent'
-                : 'border border-border text-muted hover:text-white'
-            }`}
-          >
-            {stackLabels[s]}
-          </button>
-        ))}
+        {visibleStacks.map((s) => {
+          const active = stackFilter === s
+          const color = s !== 'all' ? stackColors[s as Stack] : undefined
+
+          if (color) {
+            return (
+              <button
+                key={s}
+                type="button"
+                onClick={() => onStackFilter(s)}
+                aria-pressed={active}
+                style={
+                  active
+                    ? {
+                        backgroundColor: `color-mix(in srgb, ${color} 22%, transparent)`,
+                        color,
+                        borderColor: color
+                      }
+                    : {
+                        borderColor: `color-mix(in srgb, ${color} 50%, transparent)`,
+                        color: `color-mix(in srgb, ${color} 75%, #8f8f8f)`
+                      }
+                }
+                className="rounded-full border px-3 py-1 text-xs transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 hover:opacity-90"
+              >
+                {stackLabels[s]}
+              </button>
+            )
+          }
+
+          return (
+            <button
+              key={s}
+              type="button"
+              onClick={() => onStackFilter(s)}
+              aria-pressed={active}
+              className={`rounded-full px-3 py-1 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ${
+                active
+                  ? 'bg-accent/15 text-accent'
+                  : 'border border-border text-muted hover:text-white'
+              }`}
+            >
+              {stackLabels[s]}
+            </button>
+          )
+        })}
       </div>
+
       {tags.length > 0 && (
         <div role="group" aria-label="Filtrar por tag" className="flex flex-wrap gap-2">
           <button
