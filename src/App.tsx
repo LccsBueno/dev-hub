@@ -100,7 +100,7 @@ export default function App() {
                     onPointerUp={rescanPress.onPointerUp}
                     onPointerLeave={rescanPress.onPointerLeave}
                     onClick={rescan}
-                    disabled={scanning || (config?.rootFolders.length ?? 0) === 0}
+                    disabled={scanning || (config !== null && config.rootFolders.length === 0)}
                     type="button"
                     className="flex items-center gap-2 rounded-lg border border-accent px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent/10 focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none disabled:opacity-50"
                   >
@@ -108,7 +108,7 @@ export default function App() {
                     {scanning ? 'Reescaneando…' : 'Reescanear projetos'}
                   </button>
                 </div>
-                {(config?.rootFolders.length ?? 0) === 0 ? (
+                {config !== null && config.rootFolders.length === 0 && Object.keys(config.projects).length === 0 ? (
                   <div className="mt-12 flex flex-col items-center gap-3 text-center">
                     <p className="text-sm text-muted">Nenhum diretório configurado ainda.</p>
                     <button
