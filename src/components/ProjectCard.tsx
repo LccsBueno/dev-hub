@@ -1,18 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Code2, Container, Folder, Play, Square } from 'lucide-react'
-import type { ProjectConfig, Stack } from '../types'
+import { Code2, Container, Folder, Play, Square, Star } from 'lucide-react'
+import type { ProjectConfig } from '../types'
 import { usePressAnimation } from '../lib/motion'
-
-const stackColors: Record<Stack, string> = {
-  node: 'bg-green-500/15 text-green-400',
-  maven: 'bg-orange-500/15 text-orange-400',
-  gradle: 'bg-cyan-500/15 text-cyan-400',
-  compose: 'bg-blue-500/15 text-blue-400',
-  rust: 'bg-amber-500/15 text-amber-400',
-  go: 'bg-sky-500/15 text-sky-400',
-  python: 'bg-yellow-500/15 text-yellow-400',
-  unknown: 'bg-neutral-500/15 text-neutral-400'
-}
 
 interface Props {
   id: string
@@ -20,6 +9,7 @@ interface Props {
   runningSince?: number
   onSelect: (id: string) => void
   onCommandChange: (id: string, command: string) => void
+  onTogglePinned: (id: string, pinned: boolean) => void
 }
 
 function elapsedLabel(since: number, now: number): string {
@@ -29,13 +19,21 @@ function elapsedLabel(since: number, now: number): string {
   return `rodando há ${Math.floor(minutes / 60)}h${minutes % 60}m`
 }
 
-export default function ProjectCard({ id, project, runningSince, onSelect, onCommandChange }: Props) {
+export default function ProjectCard({
+  id,
+  project,
+  runningSince,
+  onSelect,
+  onCommandChange,
+  onTogglePinned
+}: Props) {
   const running = runningSince !== undefined
   const [command, setCommand] = useState(project.runCommand)
   const [now, setNow] = useState(Date.now())
   const runBtn = usePressAnimation<HTMLButtonElement>()
   const folderBtn = usePressAnimation<HTMLButtonElement>()
   const editorBtn = usePressAnimation<HTMLButtonElement>()
+  const starBtn = usePressAnimation<HTMLButtonElement>()
 
   useEffect(() => setCommand(project.runCommand), [project.runCommand])
 
@@ -53,27 +51,49 @@ export default function ProjectCard({ id, project, runningSince, onSelect, onCom
   return (
     <div
       onClick={() => onSelect(id)}
-      className={`cursor-pointer rounded-2xl border border-border bg-card p-5 transition-[background-color,box-shadow] hover:bg-card-hover hover:shadow-card-hover ${
-        project.missing ? 'opacity-40' : ''
-      }`}
+      className={`group relative cursor-pointer rounded-2xl border p-5 transition-[background-color,box-shadow] ${
+        running
+          ? 'border-accent bg-accent/10 hover:bg-accent/15'
+          : 'border-border bg-card hover:bg-card-hover hover:shadow-card-hover'
+      } ${project.missing ? 'opacity-40' : ''}`}
     >
-      <div className="mb-1 flex items-center justify-between gap-2">
+      <button
+        ref={starBtn.ref}
+        onPointerDown={starBtn.onPointerDown}
+        onPointerUp={starBtn.onPointerUp}
+        onPointerLeave={starBtn.onPointerLeave}
+        onClick={(e) => {
+          e.stopPropagation()
+          onTogglePinned(id, !project.pinned)
+        }}
+        title={project.pinned ? 'Remover dos favoritos' : 'Favoritar'}
+        aria-pressed={project.pinned}
+        type="button"
+        className={`absolute top-3 right-3 flex h-6 w-6 items-center justify-center rounded-full transition-opacity focus-visible:opacity-100 focus-visible:outline-none ${
+          project.pinned ? 'text-accent opacity-100' : 'text-muted opacity-0 group-hover:opacity-100 group-focus-within:opacity-100'
+        }`}
+      >
+        <Star size={14} fill={project.pinned ? 'currentColor' : 'none'} />
+      </button>
+
+      <div className="mb-2 flex items-center gap-2 pr-7">
         <h3 className="truncate font-medium">{project.name}</h3>
-        <div className="flex shrink-0 items-center gap-1">
-          {project.runMode === 'docker' && (
-            <span title="Modo Docker" className="rounded-full bg-blue-500/15 p-1 text-blue-400">
-              <Container size={12} />
-            </span>
-          )}
-          <span className={`rounded-full px-2 py-0.5 text-xs ${stackColors[project.stack]}`}>
-            {project.stack}
+        {project.runMode === 'docker' && (
+          <span title="Modo Docker" className="shrink-0 rounded-full bg-blue-500/15 p-1 text-blue-400">
+            <Container size={12} />
           </span>
-        </div>
+        )}
+      </div>
+
+      <div className="mb-3 flex items-center gap-2">
+        <span className="rounded-full border border-border px-2 py-0.5 text-xs text-muted">
+          {project.stack}
+        </span>
       </div>
 
       <div className="mb-3 flex items-center gap-2 text-xs text-muted">
         <span
-          className={`h-2 w-2 rounded-full ${running ? 'animate-pulse bg-green-400' : 'bg-neutral-600'}`}
+          className={`h-1.5 w-1.5 rounded-full ${running ? 'animate-pulse bg-accent' : 'bg-neutral-600'}`}
         />
         {project.missing ? 'pasta não encontrada' : running ? elapsedLabel(runningSince, now) : 'parado'}
       </div>
