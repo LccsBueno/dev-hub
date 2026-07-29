@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Archive, LayoutGrid, Plus, Settings, Star, Trash2 } from 'lucide-react'
 import { usePressAnimation } from '../lib/motion'
-import { countProjectsUnderRoot, type NavFilter } from '../lib/filterProjects'
+import { countProjectsUnderRoot, filterProjects, type NavFilter } from '../lib/filterProjects'
 import type { ProjectConfig, RootFolderStatus } from '../types'
 
 export type View = 'projects' | 'settings'
@@ -119,9 +119,15 @@ export default function Sidebar({
     window.api.checkRootFolders().then(setRootStatus)
   }, [rootFolders.join('|')])
 
-  const runningCount = runningIds.length
-  const favoritesCount = Object.values(projects).filter((p) => p.pinned && !p.hidden).length
-  const archivedCount = Object.values(projects).filter((p) => p.hidden).length
+  const runningCount = Object.keys(
+    filterProjects(projects, { nav: 'running', selectedRoot: null, search: '', stack: 'all', runningIds })
+  ).length
+  const favoritesCount = Object.keys(
+    filterProjects(projects, { nav: 'favorites', selectedRoot: null, search: '', stack: 'all', runningIds })
+  ).length
+  const archivedCount = Object.keys(
+    filterProjects(projects, { nav: 'archived', selectedRoot: null, search: '', stack: 'all', runningIds })
+  ).length
 
   const selectNav = (next: NavFilter): void => {
     onSelectRoot(null)

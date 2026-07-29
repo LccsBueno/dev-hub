@@ -7,6 +7,7 @@ interface Props {
   id: string
   project: ProjectConfig
   runningSince?: number
+  selected?: boolean
   onSelect: (id: string) => void
   onCommandChange: (id: string, command: string) => void
   onTogglePinned: (id: string, pinned: boolean) => void
@@ -23,6 +24,7 @@ export default function ProjectCard({
   id,
   project,
   runningSince,
+  selected,
   onSelect,
   onCommandChange,
   onTogglePinned
@@ -55,7 +57,7 @@ export default function ProjectCard({
         running
           ? 'border-accent bg-accent/10 hover:bg-accent/15'
           : 'border-border bg-card hover:bg-card-hover hover:shadow-card-hover'
-      } ${project.missing ? 'opacity-40' : ''}`}
+      } ${project.missing ? 'opacity-40' : ''} ${selected ? 'ring-2 ring-accent ring-offset-2 ring-offset-bg' : ''}`}
     >
       <button
         ref={starBtn.ref}

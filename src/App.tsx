@@ -54,12 +54,15 @@ export default function App() {
   const addFolder = async (): Promise<void> => {
     const picked = await window.api.pickFolder()
     const current = config?.rootFolders ?? []
-    if (picked && !current.includes(picked)) {
+    if (picked && !current.some((f) => f.toLowerCase() === picked.toLowerCase())) {
       await updateRootFolders([...current, picked])
     }
   }
 
   const removeFolder = async (folder: string): Promise<void> => {
+    if (!window.confirm(`Remover "${folder}" da lista de diretórios? Os projetos já escaneados continuarão aparecendo como "não encontrados" até serem arquivados manualmente.`)) {
+      return
+    }
     if (selectedRoot === folder) setSelectedRoot(null)
     await updateRootFolders((config?.rootFolders ?? []).filter((f) => f !== folder))
   }
@@ -97,27 +100,43 @@ export default function App() {
                     onPointerUp={rescanPress.onPointerUp}
                     onPointerLeave={rescanPress.onPointerLeave}
                     onClick={rescan}
-                    disabled={scanning}
+                    disabled={scanning || (config?.rootFolders.length ?? 0) === 0}
                     type="button"
                     className="flex items-center gap-2 rounded-lg border border-accent px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent/10 focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none disabled:opacity-50"
                   >
                     <RefreshCw size={16} className={scanning ? 'animate-spin' : ''} />
-                    {scanning ? 'Escaneando…' : 'Escanear diretório'}
+                    {scanning ? 'Reescaneando…' : 'Reescanear projetos'}
                   </button>
                 </div>
-                <SearchBar
-                  search={search}
-                  onSearch={setSearch}
-                  stackFilter={stackFilter}
-                  onStackFilter={setStackFilter}
-                />
-                <ProjectGrid
-                  projects={filtered}
-                  running={running}
-                  onSelect={setSelectedId}
-                  onCommandChange={updateProjectCommand}
-                  onTogglePinned={updatePinned}
-                />
+                {(config?.rootFolders.length ?? 0) === 0 ? (
+                  <div className="mt-12 flex flex-col items-center gap-3 text-center">
+                    <p className="text-sm text-muted">Nenhum diretório configurado ainda.</p>
+                    <button
+                      onClick={addFolder}
+                      type="button"
+                      className="flex items-center gap-2 rounded-lg border border-accent px-4 py-2 text-sm font-medium text-accent transition-colors hover:bg-accent/10 focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none"
+                    >
+                      Adicionar diretório
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <SearchBar
+                      search={search}
+                      onSearch={setSearch}
+                      stackFilter={stackFilter}
+                      onStackFilter={setStackFilter}
+                    />
+                    <ProjectGrid
+                      projects={filtered}
+                      running={running}
+                      selectedId={selectedId}
+                      onSelect={setSelectedId}
+                      onCommandChange={updateProjectCommand}
+                      onTogglePinned={updatePinned}
+                    />
+                  </>
+                )}
               </>
             ) : (
               <>

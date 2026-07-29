@@ -4,6 +4,7 @@ import type { ProjectConfig } from '../types'
 interface Props {
   projects: Record<string, ProjectConfig>
   running: Record<string, number>
+  selectedId: string | null
   onSelect: (id: string) => void
   onCommandChange: (id: string, command: string) => void
   onTogglePinned: (id: string, pinned: boolean) => void
@@ -12,6 +13,7 @@ interface Props {
 export default function ProjectGrid({
   projects,
   running,
+  selectedId,
   onSelect,
   onCommandChange,
   onTogglePinned
@@ -33,6 +35,7 @@ export default function ProjectGrid({
           id={id}
           project={project}
           runningSince={running[id]}
+          selected={id === selectedId}
           onSelect={onSelect}
           onCommandChange={onCommandChange}
           onTogglePinned={onTogglePinned}

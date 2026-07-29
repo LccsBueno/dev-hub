@@ -71,11 +71,17 @@ export default function ProjectDetailPanel({
   useEffect(() => {
     if (!projectId) return
     const handleKey = (e: KeyboardEvent): void => {
-      if (e.key === 'Escape') {
-        const active = document.activeElement as HTMLElement | null
-        if (active && asideRef.current?.contains(active)) active.blur()
+      if (e.key !== 'Escape') return
+      const active = document.activeElement as HTMLElement | null
+      const withinPanel = active ? asideRef.current?.contains(active) : false
+      if (withinPanel) {
+        active?.blur()
         onClose()
+        return
       }
+      const isEditable = active?.tagName === 'INPUT' || active?.tagName === 'TEXTAREA' || active?.isContentEditable
+      if (isEditable) return
+      onClose()
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)

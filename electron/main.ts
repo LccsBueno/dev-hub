@@ -40,12 +40,12 @@ function createWindow(): void {
   win = new BrowserWindow({
     width: 1400,
     height: 900,
-    backgroundColor: '#0a0a0a',
+    backgroundColor: '#252525',
     autoHideMenuBar: true,
     titleBarStyle: 'hidden',
     titleBarOverlay: {
-      color: '#0a0a0a',
-      symbolColor: '#ffffff',
+      color: '#252525',
+      symbolColor: '#ececec',
       height: 32
     },
     webPreferences: {
