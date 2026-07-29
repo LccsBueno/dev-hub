@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Archive, LayoutGrid, Plus, Settings, Star, Trash2 } from 'lucide-react'
+import { AlertTriangle, Archive, LayoutGrid, Plus, Settings, Star, Trash2 } from 'lucide-react'
 import { usePressAnimation } from '../lib/motion'
 import { countProjectsUnderRoot, filterProjects, type NavFilter } from '../lib/filterProjects'
 import type { ProjectConfig, RootFolderStatus } from '../types'
@@ -84,7 +84,13 @@ function DirectoryRow({
     >
       <button onClick={onSelect} className="flex-1 truncate text-left focus-visible:outline-none">
         {folder.split(/[\\/]/).filter(Boolean).pop() ?? folder}
-        {missing && <span className="ml-1 text-amber-400">⚠</span>}
+        {missing && (
+          <AlertTriangle
+            size={12}
+            className="ml-1 inline-block shrink-0 text-amber-400"
+            aria-label="Pasta não encontrada no disco"
+          />
+        )}
       </button>
       <span className="text-xs text-muted">{count}</span>
       <button

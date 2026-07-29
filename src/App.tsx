@@ -73,7 +73,7 @@ export default function App() {
 
   return (
     <ToastProvider>
-      <div className="flex h-screen flex-col bg-bg text-white">
+      <div className="flex h-screen flex-col bg-bg">
         <div className="drag-region h-8 shrink-0" />
         <div className="flex flex-1 overflow-hidden">
           <Sidebar
@@ -93,7 +93,9 @@ export default function App() {
             {view === 'projects' ? (
               <>
                 <div className="mb-6 flex items-center justify-between gap-4">
-                  <h1 className="text-2xl font-medium">{title}</h1>
+                  <h1 className="text-2xl font-medium">
+                    {title} <span className="text-muted">· {Object.keys(filtered).length} projetos</span>
+                  </h1>
                   <button
                     ref={rescanPress.ref}
                     onPointerDown={rescanPress.onPointerDown}
