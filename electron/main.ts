@@ -1,6 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
 import { join } from 'path'
-import { existsSync, readdirSync, readFileSync } from 'fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'fs'
 import { spawn } from 'child_process'
 import { loadConfig, saveConfig, mergeProjects } from './configStore'
 import { scanRoots } from './scanner'
@@ -225,6 +225,43 @@ function registerIpc(): void {
       if (code !== 0) sendError(`"${cfg.editorCommand}" não encontrado no PATH.`)
     })
     child.on('error', () => sendError(`"${cfg.editorCommand}" não encontrado no PATH.`))
+  })
+
+  ipcMain.handle('fs:createReadme', (_e, dirPath: string, projectName: string) => {
+    if (!isKnownProjectPath(dirPath)) return false
+    const readmePath = join(dirPath, 'README.md')
+    if (existsSync(readmePath)) return false
+    try {
+      writeFileSync(
+        readmePath,
+        `# ${projectName}\n\n## Descrição\n\n## Como rodar\n\n## Estrutura\n\n## Tecnologias\n`,
+        'utf8'
+      )
+      return true
+    } catch {
+      return false
+    }
+  })
+
+  const archDir = join(app.getPath('userData'), 'architectures')
+
+  ipcMain.handle('arch:load', (_e, id: string) => {
+    const filePath = join(archDir, `${id}.json`)
+    if (!existsSync(filePath)) return null
+    try {
+      return JSON.parse(readFileSync(filePath, 'utf8'))
+    } catch {
+      return null
+    }
+  })
+
+  ipcMain.handle('arch:save', (_e, id: string, data: unknown) => {
+    if (!existsSync(archDir)) mkdirSync(archDir, { recursive: true })
+    try {
+      writeFileSync(join(archDir, `${id}.json`), JSON.stringify(data))
+    } catch {
+      // ignore
+    }
   })
 
   ipcMain.handle('fs:dirTree', (_e, dirPath: string) => {

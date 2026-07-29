@@ -45,6 +45,10 @@ const api = {
   },
   getDirTree: (path: string) => ipcRenderer.invoke('fs:dirTree', path),
   getReadme: (path: string) => ipcRenderer.invoke('fs:readme', path),
+  createReadme: (path: string, projectName: string) =>
+    ipcRenderer.invoke('fs:createReadme', path, projectName),
+  loadArchitecture: (id: string) => ipcRenderer.invoke('arch:load', id),
+  saveArchitecture: (id: string, data: unknown) => ipcRenderer.invoke('arch:save', id, data),
 
   onError: (callback: (message: string) => void) => {
     const handler = (_e: IpcRendererEvent, message: string): void => callback(message)

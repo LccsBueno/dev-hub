@@ -15,13 +15,16 @@ import NotesTab from './NotesTab'
 import GitTab from './GitTab'
 import LogsTab from './LogsTab'
 
-type TabId = 'info' | 'notes' | 'git' | 'logs'
+const ArchitectureTab = React.lazy(() => import('./ArchitectureTab'))
+
+type TabId = 'info' | 'notes' | 'git' | 'logs' | 'arch'
 
 const tabs: { id: TabId; label: string }[] = [
   { id: 'info', label: 'Info' },
   { id: 'notes', label: 'Notas' },
   { id: 'git', label: 'Git' },
-  { id: 'logs', label: 'Logs' }
+  { id: 'logs', label: 'Logs' },
+  { id: 'arch', label: 'Arq.' }
 ]
 
 interface Props {
@@ -39,7 +42,7 @@ interface Props {
   onToggleHidden: (id: string, hidden: boolean) => void
 }
 
-function TabContent({ tabId, children }: { tabId: TabId; children: ReactNode }) {
+function TabContent({ tabId, scrollable = true, children }: { tabId: TabId; scrollable?: boolean; children: ReactNode }) {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -47,7 +50,7 @@ function TabContent({ tabId, children }: { tabId: TabId; children: ReactNode }) 
   }, [tabId])
 
   return (
-    <div ref={ref} className="flex-1 overflow-y-auto">
+    <div ref={ref} className={`flex-1 ${scrollable ? 'overflow-y-auto' : 'overflow-hidden'}`}>
       {children}
     </div>
   )
@@ -314,7 +317,7 @@ export default function ProjectDetailPanel({
         ))}
       </div>
 
-      <TabContent key={`${mountedId}:${activeTab}`} tabId={activeTab}>
+      <TabContent key={`${mountedId}:${activeTab}`} tabId={activeTab} scrollable={activeTab !== 'arch'}>
         {activeTab === 'info' && (
           <InfoTab
             projectId={mountedId}
@@ -327,10 +330,15 @@ export default function ProjectDetailPanel({
           />
         )}
         {activeTab === 'notes' && (
-          <NotesTab projectPath={project.path} />
+          <NotesTab projectPath={project.path} projectName={project.name} />
         )}
         {activeTab === 'git' && <GitTab projectPath={project.path} />}
         {activeTab === 'logs' && <LogsTab projectId={mountedId} projectPath={project.path} />}
+        {activeTab === 'arch' && (
+          <React.Suspense fallback={<div className="flex h-full items-center justify-center text-xs text-muted">Carregando…</div>}>
+            <ArchitectureTab projectId={mountedId} />
+          </React.Suspense>
+        )}
       </TabContent>
     </aside>
   )

@@ -30,6 +30,9 @@ declare global {
       onStatusChange(cb: (id: string, status: 'running' | 'stopped') => void): () => void
       getDirTree(path: string): Promise<{ name: string; isDir: boolean }[]>
       getReadme(path: string): Promise<string | null>
+      createReadme(path: string, projectName: string): Promise<boolean>
+      loadArchitecture(id: string): Promise<{ elements: unknown[] } | null>
+      saveArchitecture(id: string, data: { elements: unknown[] }): Promise<void>
       onError(cb: (message: string) => void): () => void
     }
   }
