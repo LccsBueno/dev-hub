@@ -43,6 +43,9 @@ const api = {
     ipcRenderer.on('process:status', handler)
     return () => ipcRenderer.removeListener('process:status', handler)
   },
+  getDirTree: (path: string) => ipcRenderer.invoke('fs:dirTree', path),
+  getReadme: (path: string) => ipcRenderer.invoke('fs:readme', path),
+
   onError: (callback: (message: string) => void) => {
     const handler = (_e: IpcRendererEvent, message: string): void => callback(message)
     ipcRenderer.on('app:error', handler)

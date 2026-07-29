@@ -1,30 +1,37 @@
 import { useEffect, useState } from 'react'
-import type { ProjectConfig } from '../../types'
+import { Marked } from 'marked'
+
+const marked = new Marked()
 
 interface Props {
-  projectId: string
-  project: ProjectConfig
-  onNotesChange: (id: string, notes: string) => void
+  projectPath: string
 }
 
-export default function NotesTab({ projectId, project, onNotesChange }: Props) {
-  const [notes, setNotes] = useState(project.notes)
+export default function NotesTab({ projectPath }: Props) {
+  const [readme, setReadme] = useState<string | null | undefined>(undefined)
 
-  useEffect(() => setNotes(project.notes), [project.notes])
+  useEffect(() => {
+    setReadme(undefined)
+    window.api.getReadme(projectPath).then(setReadme)
+  }, [projectPath])
 
-  const save = (): void => {
-    if (notes !== project.notes) onNotesChange(projectId, notes)
+  if (readme === undefined) {
+    return <div className="p-5 text-xs text-muted">Carregando…</div>
   }
 
+  if (readme === null) {
+    return (
+      <div className="flex h-full items-center justify-center p-5">
+        <p className="text-sm text-muted">Nenhum README.md encontrado.</p>
+      </div>
+    )
+  }
+
+  const html = marked.parse(readme) as string
+
   return (
-    <div className="flex h-full flex-col p-5">
-      <textarea
-        value={notes}
-        onChange={(e) => setNotes(e.target.value)}
-        onBlur={save}
-        placeholder="Anotações sobre este projeto…"
-        className="flex-1 resize-none rounded-md border border-border bg-bg p-3 text-sm outline-none focus:border-accent"
-      />
+    <div className="h-full overflow-y-auto p-5">
+      <div className="readme-content" dangerouslySetInnerHTML={{ __html: html }} />
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { AlertTriangle, Archive, Code2, Folder, Play, Square, Star, X } from 'lucide-react'
 import type { ProjectConfig, RunMode } from '../../types'
@@ -69,6 +69,7 @@ export default function ProjectDetailPanel({
 }: Props) {
   const [activeTab, setActiveTab] = useState<TabId>('info')
   const [mountedId, setMountedId] = useState<string | null>(null)
+  const [panelWidth, setPanelWidth] = useState(336)
   const asideRef = useRef<HTMLElement>(null)
   const tabBarRef = useRef<HTMLDivElement>(null)
   const tabIndicatorRef = useRef<HTMLSpanElement>(null)
@@ -133,12 +134,33 @@ export default function ProjectDetailPanel({
 
   const isRunning = running[mountedId] !== undefined
 
+  const startDrag = (e: React.MouseEvent): void => {
+    e.preventDefault()
+    const startX = e.clientX
+    const startWidth = panelWidth
+    const onMove = (ev: MouseEvent): void => {
+      const next = Math.max(260, Math.min(640, startWidth + (startX - ev.clientX)))
+      setPanelWidth(next)
+    }
+    const onUp = (): void => {
+      document.removeEventListener('mousemove', onMove)
+      document.removeEventListener('mouseup', onUp)
+    }
+    document.addEventListener('mousemove', onMove)
+    document.addEventListener('mouseup', onUp)
+  }
+
   return (
     <aside
       ref={asideRef}
       aria-label="Detalhes do projeto"
-      className="flex w-84 shrink-0 flex-col border-l border-border bg-bg"
+      style={{ width: panelWidth }}
+      className="relative flex shrink-0 flex-col border-l border-border bg-bg"
     >
+      <div
+        className="absolute top-0 left-0 z-10 h-full w-1.5 cursor-col-resize transition-colors hover:bg-accent/20 active:bg-accent/40"
+        onMouseDown={startDrag}
+      />
       <div className="border-b border-border px-5 py-4">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
@@ -305,7 +327,7 @@ export default function ProjectDetailPanel({
           />
         )}
         {activeTab === 'notes' && (
-          <NotesTab projectId={mountedId} project={project} onNotesChange={onNotesChange} />
+          <NotesTab projectPath={project.path} />
         )}
         {activeTab === 'git' && <GitTab projectPath={project.path} />}
         {activeTab === 'logs' && <LogsTab projectId={mountedId} projectPath={project.path} />}

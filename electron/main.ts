@@ -1,6 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, shell } from 'electron'
 import { join } from 'path'
-import { existsSync } from 'fs'
+import { existsSync, readdirSync, readFileSync } from 'fs'
 import { spawn } from 'child_process'
 import { loadConfig, saveConfig, mergeProjects } from './configStore'
 import { scanRoots } from './scanner'
@@ -225,6 +225,32 @@ function registerIpc(): void {
       if (code !== 0) sendError(`"${cfg.editorCommand}" não encontrado no PATH.`)
     })
     child.on('error', () => sendError(`"${cfg.editorCommand}" não encontrado no PATH.`))
+  })
+
+  ipcMain.handle('fs:dirTree', (_e, dirPath: string) => {
+    if (!isKnownProjectPath(dirPath)) return []
+    try {
+      return readdirSync(dirPath, { withFileTypes: true })
+        .map((e) => ({ name: e.name, isDir: e.isDirectory() }))
+        .sort((a, b) => {
+          if (a.isDir !== b.isDir) return a.isDir ? -1 : 1
+          return a.name.localeCompare(b.name)
+        })
+    } catch {
+      return []
+    }
+  })
+
+  ipcMain.handle('fs:readme', (_e, dirPath: string) => {
+    if (!isKnownProjectPath(dirPath)) return null
+    try {
+      const entries = readdirSync(dirPath)
+      const name = entries.find((e) => /^readme\.md$/i.test(e))
+      if (!name) return null
+      return readFileSync(join(dirPath, name), 'utf8')
+    } catch {
+      return null
+    }
   })
 
   ipcMain.on('open:terminal', (_e, path: string) => {

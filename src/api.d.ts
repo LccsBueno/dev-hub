@@ -28,6 +28,8 @@ declare global {
       openInTerminal(path: string): void
       onLog(cb: (id: string, chunk: string, stream: 'stdout' | 'stderr') => void): () => void
       onStatusChange(cb: (id: string, status: 'running' | 'stopped') => void): () => void
+      getDirTree(path: string): Promise<{ name: string; isDir: boolean }[]>
+      getReadme(path: string): Promise<string | null>
       onError(cb: (message: string) => void): () => void
     }
   }

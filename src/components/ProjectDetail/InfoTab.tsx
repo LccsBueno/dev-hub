@@ -1,8 +1,13 @@
 import { useEffect, useState } from 'react'
-import { Plus, X } from 'lucide-react'
+import { Check, Copy, FileText, Folder, Plus, X } from 'lucide-react'
 import type { ProjectConfig, RunMode } from '../../types'
 import { dockerRunCommand } from '../../lib/dockerCommand'
 import { stackColors } from '../../lib/stackColors'
+
+interface DirEntry {
+  name: string
+  isDir: boolean
+}
 
 interface Props {
   projectId: string
@@ -25,12 +30,23 @@ export default function InfoTab({
 }: Props) {
   const [command, setCommand] = useState(project.runCommand)
   const [showTagPicker, setShowTagPicker] = useState(false)
+  const [dirEntries, setDirEntries] = useState<DirEntry[]>([])
+  const [copied, setCopied] = useState(false)
 
   useEffect(() => setCommand(project.runCommand), [project.runCommand])
   useEffect(() => setShowTagPicker(false), [projectId])
+  useEffect(() => {
+    window.api.getDirTree(project.path).then(setDirEntries)
+  }, [project.path])
 
   const saveCommand = (): void => {
     if (command !== project.runCommand) onCommandChange(projectId, command)
+  }
+
+  const copyPath = (): void => {
+    navigator.clipboard.writeText(project.path)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
   }
 
   const addTag = (tag: string): void => {
@@ -72,8 +88,39 @@ export default function InfoTab({
 
       <section>
         <h3 className="mb-2 text-xs font-medium text-muted">Pasta</h3>
-        <p className="text-xs break-all text-neutral-300">{project.path}</p>
+        <div className="flex items-start gap-2">
+          <p className="flex-1 text-xs break-all text-neutral-300">{project.path}</p>
+          <button
+            onClick={copyPath}
+            title="Copiar caminho"
+            className="mt-0.5 shrink-0 text-muted transition-colors hover:text-white focus-visible:outline-none"
+          >
+            {copied ? <Check size={12} className="text-accent" /> : <Copy size={12} />}
+          </button>
+        </div>
       </section>
+
+      {dirEntries.length > 0 && (
+        <section>
+          <h3 className="mb-2 text-xs font-medium text-muted">Arquivos</h3>
+          <div className="rounded-lg border border-border p-2.5">
+            <div className="flex max-h-40 flex-col gap-0.5 overflow-y-auto">
+              {dirEntries.map((entry) => (
+                <div key={entry.name} className="flex items-center gap-1.5 rounded px-1 py-0.5">
+                  {entry.isDir ? (
+                    <Folder size={12} className="shrink-0 text-accent/70" />
+                  ) : (
+                    <FileText size={12} className="shrink-0 text-muted" />
+                  )}
+                  <span className={`truncate text-xs ${entry.isDir ? 'text-neutral-300' : 'text-muted'}`}>
+                    {entry.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {project.hasDockerfile && (
         <section>
