@@ -90,7 +90,7 @@ function DirectoryRow({
       <button
         onClick={onRemove}
         title="Remover diretório"
-        className="hidden h-5 w-5 items-center justify-center rounded text-muted hover:text-red-400 focus-visible:outline-none group-hover:flex"
+        className="hidden h-5 w-5 items-center justify-center rounded text-muted hover:text-red-400 focus-visible:outline-none group-hover:flex group-focus-within:flex"
       >
         <Trash2 size={12} />
       </button>
@@ -117,7 +117,7 @@ export default function Sidebar({
 
   useEffect(() => {
     window.api.checkRootFolders().then(setRootStatus)
-  }, [rootFolders])
+  }, [rootFolders.join('|')])
 
   const runningCount = runningIds.length
   const favoritesCount = Object.values(projects).filter((p) => p.pinned && !p.hidden).length
