@@ -69,7 +69,7 @@ export default function ProjectCard({
         title={project.pinned ? 'Remover dos favoritos' : 'Favoritar'}
         aria-pressed={project.pinned}
         type="button"
-        className={`absolute top-3 right-3 flex h-6 w-6 items-center justify-center rounded-full transition-opacity focus-visible:opacity-100 focus-visible:outline-none ${
+        className={`absolute top-3 right-3 flex h-6 w-6 items-center justify-center rounded-full transition-opacity focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ${
           project.pinned ? 'text-accent opacity-100' : 'text-muted opacity-0 group-hover:opacity-100 group-focus-within:opacity-100'
         }`}
       >
