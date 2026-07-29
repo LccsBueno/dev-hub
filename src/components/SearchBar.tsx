@@ -13,6 +13,18 @@ const stacks: (Stack | 'all')[] = [
   'unknown'
 ]
 
+const stackLabels: Record<Stack | 'all', string> = {
+  all: 'Todos',
+  node: 'Node',
+  maven: 'Maven',
+  gradle: 'Gradle',
+  compose: 'Compose',
+  rust: 'Rust',
+  go: 'Go',
+  python: 'Python',
+  unknown: 'Outro'
+}
+
 interface Props {
   search: string
   onSearch: (value: string) => void
@@ -22,8 +34,8 @@ interface Props {
 
 export default function SearchBar({ search, onSearch, stackFilter, onStackFilter }: Props) {
   return (
-    <div className="mb-6 flex items-center gap-3">
-      <div className="flex flex-1 items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 focus-within:border-accent">
+    <div className="mb-6 flex flex-col gap-3">
+      <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2.5 focus-within:border-accent">
         <Search size={16} className="text-muted" />
         <input
           value={search}
@@ -32,17 +44,21 @@ export default function SearchBar({ search, onSearch, stackFilter, onStackFilter
           className="w-full bg-transparent text-sm outline-none placeholder:text-muted"
         />
       </div>
-      <select
-        value={stackFilter}
-        onChange={(e) => onStackFilter(e.target.value as Stack | 'all')}
-        className="rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-white outline-none focus-visible:border-accent focus-visible:ring-2 focus-visible:ring-accent/50"
-      >
+      <div className="flex flex-wrap gap-2">
         {stacks.map((s) => (
-          <option key={s} value={s}>
-            {s === 'all' ? 'Todas as stacks' : s}
-          </option>
+          <button
+            key={s}
+            onClick={() => onStackFilter(s)}
+            className={`rounded-full px-3 py-1 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ${
+              stackFilter === s
+                ? 'bg-accent/15 text-accent'
+                : 'border border-border text-muted hover:text-white'
+            }`}
+          >
+            {stackLabels[s]}
+          </button>
         ))}
-      </select>
+      </div>
     </div>
   )
 }
