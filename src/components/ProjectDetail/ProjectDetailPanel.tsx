@@ -16,15 +16,17 @@ import GitTab from './GitTab'
 import LogsTab from './LogsTab'
 
 const ArchitectureTab = React.lazy(() => import('./ArchitectureTab'))
+const DockerTab = React.lazy(() => import('./DockerTab'))
 
-type TabId = 'info' | 'notes' | 'git' | 'logs' | 'arch'
+type TabId = 'info' | 'notes' | 'git' | 'logs' | 'arch' | 'docker'
 
 const tabs: { id: TabId; label: string }[] = [
   { id: 'info', label: 'Info' },
   { id: 'notes', label: 'Notas' },
   { id: 'git', label: 'Git' },
   { id: 'logs', label: 'Logs' },
-  { id: 'arch', label: 'Arq.' }
+  { id: 'arch', label: 'Arq.' },
+  { id: 'docker', label: 'Docker' }
 ]
 
 interface Props {
@@ -325,7 +327,7 @@ export default function ProjectDetailPanel({
         ))}
       </div>
 
-      <TabContent key={`${mountedId}:${activeTab}`} tabId={activeTab} scrollable={activeTab !== 'arch'}>
+      <TabContent key={`${mountedId}:${activeTab}`} tabId={activeTab} scrollable={activeTab !== 'arch' && activeTab !== 'docker'}>
         {activeTab === 'info' && (
           <InfoTab
             projectId={mountedId}
@@ -345,6 +347,11 @@ export default function ProjectDetailPanel({
         {activeTab === 'arch' && (
           <React.Suspense fallback={<div className="flex h-full items-center justify-center text-xs text-muted">Carregando…</div>}>
             <ArchitectureTab projectId={mountedId} />
+          </React.Suspense>
+        )}
+        {activeTab === 'docker' && (
+          <React.Suspense fallback={<div className="flex h-full items-center justify-center text-xs text-muted">Carregando…</div>}>
+            <DockerTab projectId={mountedId} project={project} />
           </React.Suspense>
         )}
       </TabContent>
