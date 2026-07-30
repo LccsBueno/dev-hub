@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Code2, Container, Folder, Play, Square, Star } from 'lucide-react'
 import type { ProjectConfig } from '../types'
 import { useHoverLift, usePressAnimation } from '../lib/motion'
-import { stackColors, stackTechs } from '../lib/stackColors'
+import { frameworkTechs, stackColors, stackTechs } from '../lib/stackColors'
 
 interface Props {
   id: string
@@ -106,7 +106,7 @@ export default function ProjectCard({
       </div>
 
       <div className="mb-3 flex flex-wrap items-center gap-1.5">
-        {(stackTechs[project.stack] ?? [{ label: project.stack, color: stackColors[project.stack] ?? '#94a3b8' }]).map((tech) => (
+        {(frameworkTechs[project.framework] ?? stackTechs[project.stack] ?? [{ label: project.stack, color: stackColors[project.stack] ?? '#94a3b8' }]).map((tech) => (
           <span
             key={tech.label}
             style={{

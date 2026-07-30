@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Check, Copy, FileText, Folder, Plus, X } from 'lucide-react'
 import type { ProjectConfig, RunMode } from '../../types'
 import { dockerRunCommand } from '../../lib/dockerCommand'
-import { stackColors, stackTechs } from '../../lib/stackColors'
+import { frameworkTechs, stackColors, stackTechs } from '../../lib/stackColors'
 
 interface DirEntry {
   name: string
@@ -66,7 +66,7 @@ export default function InfoTab({
       <section>
         <h3 className="mb-2 text-xs font-medium text-muted">Stack</h3>
         <div className="flex flex-wrap gap-1.5">
-          {(stackTechs[project.stack] ?? [{ label: project.stack, color: stackColors[project.stack] ?? '#94a3b8' }]).map((tech) => (
+          {(frameworkTechs[project.framework] ?? stackTechs[project.stack] ?? [{ label: project.stack, color: stackColors[project.stack] ?? '#94a3b8' }]).map((tech) => (
             <span
               key={tech.label}
               style={{

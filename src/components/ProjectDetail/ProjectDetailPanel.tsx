@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { AlertTriangle, Archive, Code2, Folder, Play, Square, Star, Terminal, X } from 'lucide-react'
 import type { ProjectConfig, RunMode } from '../../types'
-import { stackColors, stackTechs } from '../../lib/stackColors'
+import { frameworkTechs, stackColors, stackTechs } from '../../lib/stackColors'
 import {
   animateDetailPanelEnter,
   animateDetailPanelExit,
@@ -231,7 +231,7 @@ export default function ProjectDetailPanel({
               {isRunning ? 'rodando' : 'parado'}
             </span>
           )}
-          {(stackTechs[project.stack] ?? [{ label: project.stack, color: stackColors[project.stack] ?? '#94a3b8' }]).map((tech) => (
+          {(frameworkTechs[project.framework] ?? stackTechs[project.stack] ?? [{ label: project.stack, color: stackColors[project.stack] ?? '#94a3b8' }]).map((tech) => (
             <span
               key={tech.label}
               style={{
