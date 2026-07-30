@@ -7,6 +7,8 @@ function makeProject(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
     name: 'demo',
     path: 'C:\\dev\\projetos\\demo',
     stack: 'node',
+    framework: 'unknown',
+    inferredPort: 0,
     runCommand: 'npm run dev',
     pinned: false,
     hidden: false,
@@ -15,7 +17,7 @@ function makeProject(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
     hasDockerfile: false,
     runMode: 'native',
     ...overrides
-  }
+  } as ProjectConfig
 }
 
 describe('filterProjects', () => {

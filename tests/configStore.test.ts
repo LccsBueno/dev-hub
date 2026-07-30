@@ -48,6 +48,8 @@ describe('loadConfig', () => {
           name: 'demo',
           path: 'C:\\dev\\projetos\\demo',
           stack: 'node',
+          framework: 'node',
+          inferredPort: 3000,
           runCommand: 'npm run dev',
           pinned: true,
           hidden: false,
@@ -100,6 +102,8 @@ describe('mergeProjects', () => {
     name: 'demo',
     path: 'C:\\dev\\demo',
     stack: 'node',
+    framework: 'nestjs',
+    inferredPort: 3000,
     suggestedCommand: 'npm run dev',
     hasDockerfile: false,
     lastModifiedAt: 1700000000000
@@ -111,6 +115,8 @@ describe('mergeProjects', () => {
       name: 'demo',
       path: 'C:\\dev\\demo',
       stack: 'node',
+      framework: 'nestjs',
+      inferredPort: 3000,
       runCommand: 'npm run dev',
       pinned: false,
       hidden: false,
@@ -129,6 +135,8 @@ describe('mergeProjects', () => {
         name: 'demo',
         path: 'C:\\dev\\demo',
         stack: 'node',
+        framework: 'node',
+        inferredPort: 3000,
         runCommand: 'npm run start:custom',
         pinned: true,
         hidden: false,
@@ -149,6 +157,8 @@ describe('mergeProjects', () => {
         name: 'old-name',
         path: 'C:\\dev\\demo',
         stack: 'unknown',
+        framework: 'node',
+        inferredPort: 3000,
         runCommand: 'x',
         pinned: false,
         hidden: false,
@@ -171,6 +181,8 @@ describe('mergeProjects', () => {
         name: 'gone',
         path: 'D:\\gone',
         stack: 'python',
+        framework: 'python',
+        inferredPort: 8000,
         runCommand: 'python main.py',
         pinned: false,
         hidden: true,
@@ -191,6 +203,8 @@ describe('mergeProjects', () => {
         name: 'demo',
         path: 'C:\\dev\\demo',
         stack: 'node',
+        framework: 'node',
+        inferredPort: 3000,
         runCommand: 'npm run dev',
         pinned: false,
         hidden: false,
@@ -247,6 +261,8 @@ describe('mergeProjects', () => {
         name: 'demo',
         path: 'C:\\dev\\demo',
         stack: 'node',
+        framework: 'node',
+        inferredPort: 3000,
         runCommand: 'npm run dev',
         pinned: false,
         hidden: false,
@@ -267,6 +283,8 @@ describe('mergeProjects', () => {
         name: 'demo',
         path: 'C:\\dev\\demo',
         stack: 'node',
+        framework: 'node',
+        inferredPort: 3000,
         runCommand: 'npm run dev',
         pinned: false,
         hidden: false,
@@ -287,6 +305,8 @@ describe('mergeProjects', () => {
         name: 'gone',
         path: 'D:\\gone',
         stack: 'python',
+        framework: 'python',
+        inferredPort: 8000,
         runCommand: 'python main.py',
         pinned: false,
         hidden: true,
@@ -321,6 +341,8 @@ describe('mergeProjects', () => {
         name: 'demo',
         path: 'C:\\dev\\demo',
         stack: 'node',
+        framework: 'node',
+        inferredPort: 3000,
         runCommand: 'npm run dev',
         pinned: false,
         hidden: false,
@@ -348,5 +370,89 @@ describe('mergeProjects', () => {
     const merged = mergeProjects({ gone: legacyGone }, [scannedDemo])
     expect(merged['gone'].hasDockerfile).toBe(false)
     expect(merged['gone'].runMode).toBe('native')
+  })
+})
+
+describe('framework + inferredPort propagation in mergeProjects', () => {
+  it('new project gets framework and inferredPort from scan', () => {
+    const scannedDemo: ScannedProject = {
+      id: 'id1',
+      name: 'demo',
+      path: 'C:\\dev\\demo',
+      stack: 'node',
+      framework: 'nestjs',
+      inferredPort: 3000,
+      suggestedCommand: 'npm run dev',
+      hasDockerfile: false,
+      lastModifiedAt: 1700000000000
+    }
+    const merged = mergeProjects({}, [scannedDemo])
+    expect(merged['id1'].framework).toBe('nestjs')
+    expect(merged['id1'].inferredPort).toBe(3000)
+  })
+
+  it('existing project gets framework updated on rescan', () => {
+    const scannedDemo: ScannedProject = {
+      id: 'id1',
+      name: 'demo',
+      path: 'C:\\dev\\demo',
+      stack: 'node',
+      framework: 'nestjs',
+      inferredPort: 3000,
+      suggestedCommand: 'npm run dev',
+      hasDockerfile: false,
+      lastModifiedAt: 1700000000000
+    }
+    const existing: Record<string, ProjectConfig> = {
+      id1: {
+        name: 'demo',
+        path: 'C:\\dev\\demo',
+        stack: 'node',
+        framework: 'node',
+        inferredPort: 3000,
+        runCommand: 'npm run dev',
+        pinned: false,
+        hidden: false,
+        tags: [],
+        notes: '',
+        hasDockerfile: false,
+        runMode: 'native'
+      }
+    }
+    const merged = mergeProjects(existing, [scannedDemo])
+    expect(merged['id1'].framework).toBe('nestjs')
+  })
+
+  it('missing project preserves its framework', () => {
+    const scannedDemo: ScannedProject = {
+      id: 'id1',
+      name: 'demo',
+      path: 'C:\\dev\\demo',
+      stack: 'node',
+      framework: 'nestjs',
+      inferredPort: 3000,
+      suggestedCommand: 'npm run dev',
+      hasDockerfile: false,
+      lastModifiedAt: 1700000000000
+    }
+    const existing: Record<string, ProjectConfig> = {
+      gone: {
+        name: 'gone',
+        path: 'D:\\gone',
+        stack: 'python',
+        framework: 'fastapi',
+        inferredPort: 8000,
+        runCommand: 'python main.py',
+        pinned: false,
+        hidden: false,
+        tags: [],
+        notes: '',
+        hasDockerfile: false,
+        runMode: 'native'
+      }
+    }
+    const merged = mergeProjects(existing, [scannedDemo])
+    expect(merged['gone'].framework).toBe('fastapi')
+    expect(merged['gone'].inferredPort).toBe(8000)
   })
 })
