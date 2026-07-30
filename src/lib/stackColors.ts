@@ -6,7 +6,7 @@ export const stackColors: Partial<Record<Stack, string>> = {
   gradle:  '#6ee7b7',
   compose: '#38bdf8',
   rust:    '#fb923c',
-  go:      '#60a5fa',
+  go:      '#38bdf8',
   python:  '#facc15',
   unknown: '#94a3b8'
 }
