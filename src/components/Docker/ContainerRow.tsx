@@ -2,7 +2,7 @@ import { Play, RotateCw, Square, HardDrive } from 'lucide-react'
 import type { DockerContainerInfo } from '../../types'
 import { usePressAnimation } from '../../lib/motion'
 
-export const COL_TEMPLATE = '20px 10px minmax(0,1fr) 160px 90px 150px 136px'
+export const COL_TEMPLATE = '20px 10px minmax(0,1.2fr) minmax(0,1fr) 80px minmax(0,1fr) 136px'
 
 interface Props {
   container: DockerContainerInfo
