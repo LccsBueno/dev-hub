@@ -1,4 +1,4 @@
-import type { Config, GitInfo, LogLine, RootFolderStatus } from './types'
+import type { Config, DockerContainerInfo, DockerGroup, DockerMount, GitInfo, LogLine, RootFolderStatus } from './types'
 
 declare global {
   interface Window {
@@ -15,6 +15,7 @@ declare global {
       updateHidden(id: string, hidden: boolean): Promise<void>
       setTagColor(tag: string, color: string): Promise<void>
       deleteTagColor(tag: string): Promise<void>
+      updateDockerGroups(groups: DockerGroup[]): Promise<void>
       getGitInfo(path: string): Promise<GitInfo>
       checkRootFolders(): Promise<RootFolderStatus[]>
       pickFolder(): Promise<string | null>
@@ -33,6 +34,12 @@ declare global {
       createReadme(path: string, projectName: string): Promise<boolean>
       loadArchitecture(id: string): Promise<{ elements: unknown[] } | null>
       saveArchitecture(id: string, data: { elements: unknown[] }): Promise<void>
+      dockerList(): Promise<{ containers: DockerContainerInfo[]; error: string | null }>
+      dockerMounts(id: string): Promise<DockerMount[]>
+      dockerStart(id: string): Promise<void>
+      dockerStop(id: string): Promise<void>
+      dockerRestart(id: string): Promise<void>
+      dockerRunGroup(groupId: string, action: 'start' | 'stop' | 'restart'): Promise<void>
       onError(cb: (message: string) => void): () => void
     }
   }

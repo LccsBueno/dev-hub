@@ -7,8 +7,9 @@ import { scanRoots } from './scanner'
 import { ProcessManager } from './processManager'
 import { getGitInfo, emptyGitInfo } from './gitInfo'
 import { armStopFallback, clearStopFallback, stopContainer } from './docker'
+import { getContainerMounts, listContainers, restartContainer, startContainer } from './dockerInspect'
 import { dockerContainerName, dockerRunCommand } from '../src/lib/dockerCommand'
-import type { Config, RunMode } from '../src/types'
+import type { Config, DockerGroup, RunMode } from '../src/types'
 
 const pm = new ProcessManager()
 let win: BrowserWindow | null = null
@@ -148,6 +149,43 @@ function registerIpc(): void {
     const cfg = loadConfig(configPath())
     delete cfg.tagColors[tag]
     saveConfig(configPath(), cfg)
+  })
+
+  ipcMain.handle('config:updateDockerGroups', (_e, groups: DockerGroup[]) => {
+    const cfg = loadConfig(configPath())
+    cfg.dockerGroups = groups
+    saveConfig(configPath(), cfg)
+  })
+
+  ipcMain.handle('docker:list', () => listContainers())
+
+  ipcMain.handle('docker:mounts', (_e, id: string) => getContainerMounts(id))
+
+  ipcMain.handle('docker:start', (_e, id: string) => {
+    startContainer(id)
+  })
+
+  ipcMain.handle('docker:stop', (_e, id: string) => {
+    stopContainer(id)
+  })
+
+  ipcMain.handle('docker:restart', (_e, id: string) => {
+    restartContainer(id)
+  })
+
+  ipcMain.handle('docker:runGroup', async (_e, groupId: string, action: 'start' | 'stop' | 'restart') => {
+    const cfg = loadConfig(configPath())
+    const group = cfg.dockerGroups.find((g) => g.id === groupId)
+    if (!group) return
+    for (const containerName of group.containerNames) {
+      try {
+        if (action === 'start') startContainer(containerName)
+        else if (action === 'stop') stopContainer(containerName)
+        else restartContainer(containerName)
+      } catch (err) {
+        console.error(`[docker:runGroup] failed for container ${containerName}:`, err)
+      }
+    }
   })
 
   ipcMain.handle('git:info', (_e, path: string) => {

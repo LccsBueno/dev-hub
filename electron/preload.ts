@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
+import type { DockerGroup } from '../src/types'
 
 const api = {
   scanProjects: () => ipcRenderer.invoke('projects:scan'),
@@ -15,6 +16,7 @@ const api = {
   updateHidden: (id: string, hidden: boolean) => ipcRenderer.invoke('config:updateHidden', id, hidden),
   setTagColor: (tag: string, color: string) => ipcRenderer.invoke('config:setTagColor', tag, color),
   deleteTagColor: (tag: string) => ipcRenderer.invoke('config:deleteTagColor', tag),
+  updateDockerGroups: (groups: DockerGroup[]) => ipcRenderer.invoke('config:updateDockerGroups', groups),
   getGitInfo: (path: string) => ipcRenderer.invoke('git:info', path),
   checkRootFolders: () => ipcRenderer.invoke('config:checkRoots'),
   pickFolder: () => ipcRenderer.invoke('dialog:pickFolder'),
@@ -49,6 +51,14 @@ const api = {
     ipcRenderer.invoke('fs:createReadme', path, projectName),
   loadArchitecture: (id: string) => ipcRenderer.invoke('arch:load', id),
   saveArchitecture: (id: string, data: unknown) => ipcRenderer.invoke('arch:save', id, data),
+
+  dockerList: () => ipcRenderer.invoke('docker:list'),
+  dockerMounts: (id: string) => ipcRenderer.invoke('docker:mounts', id),
+  dockerStart: (id: string) => ipcRenderer.invoke('docker:start', id),
+  dockerStop: (id: string) => ipcRenderer.invoke('docker:stop', id),
+  dockerRestart: (id: string) => ipcRenderer.invoke('docker:restart', id),
+  dockerRunGroup: (groupId: string, action: 'start' | 'stop' | 'restart') =>
+    ipcRenderer.invoke('docker:runGroup', groupId, action),
 
   onError: (callback: (message: string) => void) => {
     const handler = (_e: IpcRendererEvent, message: string): void => callback(message)
