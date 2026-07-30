@@ -189,6 +189,7 @@ function registerIpc(): void {
   })
 
   ipcMain.handle('compose:read', (_e, projectPath: string) => {
+    if (!isKnownProjectPath(projectPath)) return null
     const file = join(projectPath, 'docker-compose.yml')
     try {
       return existsSync(file) ? readFileSync(file, 'utf-8') : null
@@ -198,7 +199,12 @@ function registerIpc(): void {
   })
 
   ipcMain.handle('compose:write', (_e, projectPath: string, content: string) => {
-    writeFileSync(join(projectPath, 'docker-compose.yml'), content, 'utf-8')
+    if (!isKnownProjectPath(projectPath)) return
+    try {
+      writeFileSync(join(projectPath, 'docker-compose.yml'), content, 'utf-8')
+    } catch (err) {
+      console.error('[compose:write] failed:', err)
+    }
   })
 
   ipcMain.handle('git:info', (_e, path: string) => {
