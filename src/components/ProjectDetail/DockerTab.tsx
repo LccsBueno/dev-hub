@@ -17,10 +17,12 @@ export default function DockerTab({ projectId, project }: Props) {
   const [fileExists, setFileExists] = useState(false)
   const [confirmRegenerate, setConfirmRegenerate] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const dirty = content !== savedContent
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (signal: { cancelled: boolean }) => {
     const existing = await window.api.readDockerCompose(project.path)
+    if (signal.cancelled) return
     if (existing !== null) {
       setContent(existing)
       setSavedContent(existing)
@@ -33,7 +35,11 @@ export default function DockerTab({ projectId, project }: Props) {
     setConfirmRegenerate(false)
   }, [project.path])
 
-  useEffect(() => { load() }, [load, projectId])
+  useEffect(() => {
+    const signal = { cancelled: false }
+    load(signal)
+    return () => { signal.cancelled = true }
+  }, [load, projectId])
 
   const handleGenerate = (): void => {
     setContent(generateComposeTemplate(project))
@@ -42,10 +48,13 @@ export default function DockerTab({ projectId, project }: Props) {
 
   const handleSave = async (): Promise<void> => {
     setSaving(true)
+    setSaveError(null)
     try {
       await window.api.writeDockerCompose(project.path, content)
       setSavedContent(content)
       setFileExists(true)
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : 'Falha ao salvar')
     } finally {
       setSaving(false)
     }
@@ -74,6 +83,11 @@ export default function DockerTab({ projectId, project }: Props) {
           {saving ? 'Salvando…' : 'Salvar'}
         </button>
       </div>
+      {saveError && (
+        <div className="border-b border-red-500/30 bg-red-500/10 px-4 py-1.5 text-[11px] text-red-400">
+          Erro ao salvar: {saveError}
+        </div>
+      )}
 
       {/* editor */}
       <div className="min-h-0 flex-1">
