@@ -40,6 +40,8 @@ declare global {
       dockerStop(id: string): Promise<void>
       dockerRestart(id: string): Promise<void>
       dockerRunGroup(groupId: string, action: 'start' | 'stop' | 'restart'): Promise<void>
+      readDockerCompose(projectPath: string): Promise<string | null>
+      writeDockerCompose(projectPath: string, content: string): Promise<void>
       onError(cb: (message: string) => void): () => void
     }
   }

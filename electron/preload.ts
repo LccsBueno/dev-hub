@@ -60,6 +60,9 @@ const api = {
   dockerRunGroup: (groupId: string, action: 'start' | 'stop' | 'restart') =>
     ipcRenderer.invoke('docker:runGroup', groupId, action),
 
+  readDockerCompose: (projectPath: string) => ipcRenderer.invoke('compose:read', projectPath),
+  writeDockerCompose: (projectPath: string, content: string) => ipcRenderer.invoke('compose:write', projectPath, content),
+
   onError: (callback: (message: string) => void) => {
     const handler = (_e: IpcRendererEvent, message: string): void => callback(message)
     ipcRenderer.on('app:error', handler)

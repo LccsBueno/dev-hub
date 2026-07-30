@@ -188,6 +188,19 @@ function registerIpc(): void {
     }
   })
 
+  ipcMain.handle('compose:read', (_e, projectPath: string) => {
+    const file = join(projectPath, 'docker-compose.yml')
+    try {
+      return existsSync(file) ? readFileSync(file, 'utf-8') : null
+    } catch {
+      return null
+    }
+  })
+
+  ipcMain.handle('compose:write', (_e, projectPath: string, content: string) => {
+    writeFileSync(join(projectPath, 'docker-compose.yml'), content, 'utf-8')
+  })
+
   ipcMain.handle('git:info', (_e, path: string) => {
     if (!isKnownProjectPath(path)) return emptyGitInfo
     return getGitInfo(path)
