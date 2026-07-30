@@ -14,6 +14,16 @@ function toState(raw: string): DockerState {
   return KNOWN_STATES.has(raw as DockerState) ? (raw as DockerState) : 'unknown'
 }
 
+function parseLabels(raw: string): Record<string, string> {
+  if (!raw) return {}
+  const result: Record<string, string> = {}
+  for (const pair of raw.split(',')) {
+    const eq = pair.indexOf('=')
+    if (eq !== -1) result[pair.slice(0, eq).trim()] = pair.slice(eq + 1)
+  }
+  return result
+}
+
 export function parseContainerList(output: string): DockerContainerInfo[] {
   return output
     .split('\n')
@@ -21,6 +31,9 @@ export function parseContainerList(output: string): DockerContainerInfo[] {
     .filter((line) => line.length > 0)
     .map((line) => {
       const raw = JSON.parse(line)
+      const labels = parseLabels(raw.Labels ?? '')
+      const composeProject = labels['com.docker.compose.project']
+      const composeService = labels['com.docker.compose.service']
       return {
         id: raw.ID,
         name: raw.Names,
@@ -28,7 +41,9 @@ export function parseContainerList(output: string): DockerContainerInfo[] {
         status: raw.Status,
         state: toState(raw.State),
         ports: raw.Ports ?? '',
-        startedAt: null
+        startedAt: null,
+        ...(composeProject && { composeProject }),
+        ...(composeService && { composeService })
       }
     })
 }

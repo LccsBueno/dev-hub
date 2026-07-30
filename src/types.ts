@@ -61,6 +61,8 @@ export interface DockerContainerInfo {
   state: DockerState
   ports: string
   startedAt: string | null
+  composeProject?: string
+  composeService?: string
 }
 
 export interface DockerMount {
