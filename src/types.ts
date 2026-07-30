@@ -8,12 +8,33 @@ export type Stack =
   | 'python'
   | 'unknown'
 
+export type Framework =
+  | 'nestjs'
+  | 'nextjs'
+  | 'express'
+  | 'fastify'
+  | 'vite-react'
+  | 'node'
+  | 'fastapi'
+  | 'django'
+  | 'flask'
+  | 'python'
+  | 'spring-boot'
+  | 'maven'
+  | 'gradle'
+  | 'go'
+  | 'rust'
+  | 'compose'
+  | 'unknown'
+
 export type RunMode = 'native' | 'docker'
 
 export interface ProjectConfig {
   name: string
   path: string
   stack: Stack
+  framework: Framework
+  inferredPort: number
   runCommand: string
   pinned: boolean
   hidden: boolean
@@ -39,6 +60,8 @@ export interface ScannedProject {
   name: string
   path: string
   stack: Stack
+  framework: Framework
+  inferredPort: number
   suggestedCommand: string
   hasDockerfile: boolean
   lastModifiedAt: number
