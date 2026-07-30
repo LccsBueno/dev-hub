@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { AlertTriangle, Archive, Code2, Folder, Play, Square, Star, X } from 'lucide-react'
+import { AlertTriangle, Archive, Code2, Folder, Play, Square, Star, Terminal, X } from 'lucide-react'
 import type { ProjectConfig, RunMode } from '../../types'
 import { stackColors, stackTechs } from '../../lib/stackColors'
 import {
@@ -82,6 +82,7 @@ export default function ProjectDetailPanel({
   const runBtn = usePressAnimation<HTMLButtonElement>()
   const folderBtn = usePressAnimation<HTMLButtonElement>()
   const editorBtn = usePressAnimation<HTMLButtonElement>()
+  const terminalBtn = usePressAnimation<HTMLButtonElement>()
 
   useEffect(() => {
     setActiveTab('info')
@@ -246,7 +247,7 @@ export default function ProjectDetailPanel({
         </div>
 
         <div className="mt-3 rounded-lg border border-border p-2">
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-4 gap-2">
           <button
             ref={runBtn.ref}
             onPointerDown={runBtn.onPointerDown}
@@ -289,6 +290,19 @@ export default function ProjectDetailPanel({
           >
             <Code2 size={16} />
             Editor
+          </button>
+          <button
+            ref={terminalBtn.ref}
+            onPointerDown={terminalBtn.onPointerDown}
+            onPointerUp={terminalBtn.onPointerUp}
+            onPointerLeave={terminalBtn.onPointerLeave}
+            onClick={() => window.api.openInTerminal(project.path)}
+            disabled={project.missing}
+            type="button"
+            className="flex flex-col items-center gap-1 rounded-lg px-2 py-2.5 text-[11px] font-medium text-muted transition-colors hover:bg-border hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 disabled:opacity-30"
+          >
+            <Terminal size={16} />
+            Terminal
           </button>
           </div>
         </div>
