@@ -5,6 +5,7 @@ import FilterBar from './components/FilterBar'
 import ProjectGrid from './components/ProjectGrid'
 import ProjectDetailPanel from './components/ProjectDetail/ProjectDetailPanel'
 import SettingsPanel from './components/SettingsPanel'
+import DockerView from './components/Docker/DockerView'
 import { ToastProvider } from './components/Toast'
 import { useProjects } from './hooks/useProjects'
 import { useProcessStatus } from './hooks/useProcessStatus'
@@ -196,7 +197,7 @@ export default function App() {
                     </>
                   )}
                 </>
-              ) : (
+              ) : view === 'settings' ? (
                 <div className="overflow-y-auto p-7">
                   <h1 className="mb-6 text-2xl font-medium">Configurações</h1>
                   {config && (
@@ -210,6 +211,8 @@ export default function App() {
                     />
                   )}
                 </div>
+              ) : (
+                <DockerView />
               )}
             </div>
           </main>

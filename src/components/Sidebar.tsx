@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
-import { AlertTriangle, Archive, LayoutGrid, Plus, Settings, Star, Trash2 } from 'lucide-react'
+import { AlertTriangle, Archive, Container, LayoutGrid, Plus, Settings, Star, Trash2 } from 'lucide-react'
 import { usePressAnimation } from '../lib/motion'
 import { countProjectsUnderRoot, filterProjects, type NavFilter } from '../lib/filterProjects'
 import type { ProjectConfig, RootFolderStatus } from '../types'
 
-export type View = 'projects' | 'settings'
+export type View = 'projects' | 'settings' | 'docker'
 
 interface Props {
   view: View
@@ -198,6 +198,12 @@ export default function Sidebar({
           dot
           count={runningCount}
           onClick={() => selectNav('running')}
+        />
+        <NavButton
+          active={view === 'docker'}
+          label="Docker"
+          icon={Container}
+          onClick={() => onViewChange('docker')}
         />
         <NavButton
           active={view === 'projects' && nav === 'favorites' && !selectedRoot}
