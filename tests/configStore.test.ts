@@ -16,7 +16,13 @@ beforeEach(() => {
 describe('loadConfig', () => {
   it('returns defaults when file does not exist', () => {
     const cfg = loadConfig(file)
-    expect(cfg).toEqual({ rootFolders: [], editorCommand: 'code', projects: {}, tagColors: {} })
+    expect(cfg).toEqual({
+      rootFolders: [],
+      editorCommand: 'code',
+      projects: {},
+      tagColors: {},
+      dockerGroups: []
+    })
   })
 
   it('returns defaults when file is corrupt JSON', () => {
@@ -51,12 +57,40 @@ describe('loadConfig', () => {
           runMode: 'docker'
         }
       },
-      tagColors: { tooling: '#78c091' }
+      tagColors: { tooling: '#78c091' },
+      dockerGroups: [{ id: 'g1', name: 'Dev stack', containerNames: ['db', 'api'] }]
     }
     saveConfig(file, cfg)
     expect(loadConfig(file)).toEqual(cfg)
     // saved file is pretty-printed JSON
     expect(readFileSync(file, 'utf-8')).toContain('\n')
+  })
+})
+
+describe('dockerGroups persistence', () => {
+  it('defaultConfig includes an empty dockerGroups array', () => {
+    expect(defaultConfig().dockerGroups).toEqual([])
+  })
+
+  it('loadConfig defaults dockerGroups to [] when missing from the file', () => {
+    writeFileSync(
+      file,
+      JSON.stringify({ rootFolders: [], editorCommand: 'code', projects: {}, tagColors: {} }),
+      'utf-8'
+    )
+    const cfg = loadConfig(file)
+    expect(cfg.dockerGroups).toEqual([])
+  })
+
+  it('loadConfig preserves dockerGroups when present in the file', () => {
+    const groups = [{ id: 'g1', name: 'Dev stack', containerNames: ['db', 'api'] }]
+    writeFileSync(
+      file,
+      JSON.stringify({ rootFolders: [], editorCommand: 'code', projects: {}, tagColors: {}, dockerGroups: groups }),
+      'utf-8'
+    )
+    const cfg = loadConfig(file)
+    expect(cfg.dockerGroups).toEqual(groups)
   })
 })
 

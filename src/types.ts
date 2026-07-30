@@ -31,6 +31,7 @@ export interface Config {
   editorCommand: string
   projects: Record<string, ProjectConfig>
   tagColors: Record<string, string>
+  dockerGroups: DockerGroup[]
 }
 
 export interface ScannedProject {
@@ -41,6 +42,37 @@ export interface ScannedProject {
   suggestedCommand: string
   hasDockerfile: boolean
   lastModifiedAt: number
+}
+
+export type DockerState =
+  | 'running'
+  | 'exited'
+  | 'created'
+  | 'paused'
+  | 'restarting'
+  | 'dead'
+  | 'unknown'
+
+export interface DockerContainerInfo {
+  id: string
+  name: string
+  image: string
+  status: string
+  state: DockerState
+  ports: string
+  startedAt: string | null
+}
+
+export interface DockerMount {
+  source: string
+  destination: string
+  mode: string
+}
+
+export interface DockerGroup {
+  id: string
+  name: string
+  containerNames: string[]
 }
 
 export type ProcessStatus = 'running' | 'stopped'

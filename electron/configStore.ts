@@ -3,7 +3,7 @@ import { dirname } from 'path'
 import type { Config, ProjectConfig, ScannedProject } from '../src/types'
 
 export function defaultConfig(): Config {
-  return { rootFolders: [], editorCommand: 'code', projects: {}, tagColors: {} }
+  return { rootFolders: [], editorCommand: 'code', projects: {}, tagColors: {}, dockerGroups: [] }
 }
 
 export function loadConfig(filePath: string): Config {
@@ -22,7 +22,8 @@ export function loadConfig(filePath: string): Config {
       tagColors:
         typeof parsed.tagColors === 'object' && parsed.tagColors !== null
           ? parsed.tagColors
-          : {}
+          : {},
+      dockerGroups: Array.isArray(parsed.dockerGroups) ? parsed.dockerGroups : []
     }
   } catch (err) {
     console.error('[configStore] failed to load config, using defaults:', err)
