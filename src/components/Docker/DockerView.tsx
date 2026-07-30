@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
-import type { DockerContainerInfo, DockerMount } from '../../types'
+import type { DockerContainerInfo, DockerGroup, DockerMount } from '../../types'
 import ContainerRow from './ContainerRow'
 import MountsModal from './MountsModal'
+import GroupList from './GroupList'
+import GroupModal from './GroupModal'
 
 const POLL_MS = 4000
 
@@ -11,6 +13,9 @@ export default function DockerView() {
   const [loaded, setLoaded] = useState(false)
   const [mountsFor, setMountsFor] = useState<DockerContainerInfo | null>(null)
   const [mounts, setMounts] = useState<DockerMount[]>([])
+  const [groups, setGroups] = useState<DockerGroup[]>([])
+  const [editingGroup, setEditingGroup] = useState<DockerGroup | null>(null)
+  const [creatingGroup, setCreatingGroup] = useState(false)
 
   const refresh = useCallback(async () => {
     const result = await window.api.dockerList()
@@ -24,11 +29,41 @@ export default function DockerView() {
     setMounts(await window.api.dockerMounts(container.id))
   }, [])
 
+  const loadGroups = useCallback(async () => {
+    const cfg = await window.api.getConfig()
+    setGroups(cfg.dockerGroups)
+  }, [])
+
   useEffect(() => {
     refresh()
     const timer = setInterval(refresh, POLL_MS)
     return () => clearInterval(timer)
   }, [refresh])
+
+  useEffect(() => {
+    loadGroups()
+  }, [loadGroups])
+
+  const saveGroup = async (group: DockerGroup): Promise<void> => {
+    const next = editingGroup
+      ? groups.map((g) => (g.id === group.id ? group : g))
+      : [...groups, group]
+    await window.api.updateDockerGroups(next)
+    setGroups(next)
+    setEditingGroup(null)
+    setCreatingGroup(false)
+  }
+
+  const deleteGroup = async (groupId: string): Promise<void> => {
+    const next = groups.filter((g) => g.id !== groupId)
+    await window.api.updateDockerGroups(next)
+    setGroups(next)
+  }
+
+  const runGroup = async (groupId: string, action: 'start' | 'stop' | 'restart'): Promise<void> => {
+    await window.api.dockerRunGroup(groupId, action)
+    refresh()
+  }
 
   return (
     <div className="p-7">
@@ -64,6 +99,26 @@ export default function DockerView() {
           containerName={mountsFor.name}
           mounts={mounts}
           onClose={() => setMountsFor(null)}
+        />
+      )}
+
+      <GroupList
+        groups={groups}
+        onRun={runGroup}
+        onEdit={setEditingGroup}
+        onDelete={deleteGroup}
+        onCreate={() => setCreatingGroup(true)}
+      />
+
+      {(editingGroup || creatingGroup) && (
+        <GroupModal
+          group={editingGroup}
+          availableContainers={containers}
+          onSave={saveGroup}
+          onClose={() => {
+            setEditingGroup(null)
+            setCreatingGroup(false)
+          }}
         />
       )}
     </div>
