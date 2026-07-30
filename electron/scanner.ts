@@ -47,30 +47,24 @@ export function detectFramework(dir: string, stack: Stack): { framework: Framewo
     return { framework: 'node', inferredPort: 3000 }
   }
   if (stack === 'python') {
-    try {
-      const content = (
-        tryRead(join(dir, 'requirements.txt')) + '\n' + tryRead(join(dir, 'pyproject.toml'))
-      ).toLowerCase()
-      if (content.includes('fastapi')) return { framework: 'fastapi', inferredPort: 8000 }
-      if (content.includes('django')) return { framework: 'django', inferredPort: 8000 }
-      if (content.includes('flask')) return { framework: 'flask', inferredPort: 5000 }
-    } catch { /* ignore */ }
+    const content = (
+      tryRead(join(dir, 'requirements.txt')) + '\n' + tryRead(join(dir, 'pyproject.toml'))
+    ).toLowerCase()
+    if (content.includes('fastapi')) return { framework: 'fastapi', inferredPort: 8000 }
+    if (content.includes('django')) return { framework: 'django', inferredPort: 8000 }
+    if (content.includes('flask')) return { framework: 'flask', inferredPort: 5000 }
     return { framework: 'python', inferredPort: 8000 }
   }
   if (stack === 'maven') {
-    try {
-      const content = tryRead(join(dir, 'pom.xml')).toLowerCase()
-      if (content.includes('spring-boot')) return { framework: 'spring-boot', inferredPort: 8080 }
-    } catch { /* ignore */ }
+    const content = tryRead(join(dir, 'pom.xml')).toLowerCase()
+    if (content.includes('spring-boot')) return { framework: 'spring-boot', inferredPort: 8080 }
     return { framework: 'maven', inferredPort: 8080 }
   }
   if (stack === 'gradle') {
-    try {
-      const content = (
-        tryRead(join(dir, 'build.gradle')) + '\n' + tryRead(join(dir, 'build.gradle.kts'))
-      ).toLowerCase()
-      if (content.includes('spring-boot') || content.includes('springframework')) return { framework: 'spring-boot', inferredPort: 8080 }
-    } catch { /* ignore */ }
+    const content = (
+      tryRead(join(dir, 'build.gradle')) + '\n' + tryRead(join(dir, 'build.gradle.kts'))
+    ).toLowerCase()
+    if (content.includes('spring-boot') || content.includes('springframework')) return { framework: 'spring-boot', inferredPort: 8080 }
     return { framework: 'gradle', inferredPort: 8080 }
   }
   if (stack === 'go') return { framework: 'go', inferredPort: 8080 }
