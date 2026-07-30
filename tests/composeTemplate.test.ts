@@ -67,6 +67,12 @@ describe('generateComposeTemplate', () => {
     expect(result).toContain('- "8080:8080"')
   })
 
+  it('FastAPI port 0: uses fallback port 8000 in both ports binding and uvicorn command', () => {
+    const result = generateComposeTemplate(makeProject({ framework: 'fastapi', inferredPort: 0, stack: 'python' }))
+    expect(result).toContain('- "8000:8000"')
+    expect(result).toContain('--port 8000')
+  })
+
   it('unknown framework with port 0: no ports section', () => {
     const result = generateComposeTemplate(makeProject({ framework: 'unknown', inferredPort: 0, stack: 'unknown' }))
     expect(result).not.toContain('ports:')

@@ -28,10 +28,13 @@ export function generateComposeTemplate(project: ProjectConfig): string {
       return nodeBase('      - NEXT_TELEMETRY_DISABLED=1\n')
 
     case 'vite-react':
-      return `services:\n  app:\n    build: .\n    container_name: ${name}\n${ports}    environment:\n      - NODE_ENV=production\n    restart: unless-stopped\n`
+      return nodeBase()
 
-    case 'fastapi':
-      return `services:\n  app:\n    build: .\n    container_name: ${name}\n${ports}    command: uvicorn main:app --host 0.0.0.0 --port ${port || 8000}\n    restart: unless-stopped\n`
+    case 'fastapi': {
+      const fastapiPort = port || 8000
+      const fastapiPorts = portsSection(fastapiPort)
+      return `services:\n  app:\n    build: .\n    container_name: ${name}\n${fastapiPorts}    command: uvicorn main:app --host 0.0.0.0 --port ${fastapiPort}\n    restart: unless-stopped\n`
+    }
 
     case 'django':
       return `services:\n  app:\n    build: .\n    container_name: ${name}\n${ports}    environment:\n      - DJANGO_SETTINGS_MODULE=config.settings\n    restart: unless-stopped\n`
