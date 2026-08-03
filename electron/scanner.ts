@@ -14,6 +14,26 @@ export function projectId(absPath: string): string {
   return createHash('sha1').update(absPath.toLowerCase()).digest('hex').slice(0, 12)
 }
 
+function hasPyFiles(dir: string): boolean {
+  try {
+    return readdirSync(dir).some((f) => f.endsWith('.py'))
+  } catch {
+    return false
+  }
+}
+
+function detectPythonCommand(dir: string): string {
+  const priority = ['main.py', 'app.py', 'run.py', 'server.py', 'index.py']
+  for (const name of priority) {
+    if (existsSync(join(dir, name))) return `python ${name}`
+  }
+  try {
+    const pyFile = readdirSync(dir).find((f) => f.endsWith('.py'))
+    if (pyFile) return `python ${pyFile}`
+  } catch { /* ignore */ }
+  return 'python main.py'
+}
+
 function detectNodeCommand(dir: string): string {
   try {
     const pkg = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf-8'))
@@ -85,7 +105,8 @@ export function detectStack(dir: string): Detection | null {
   else if (has('docker-compose.yml') || has('compose.yml')) { stack = 'compose'; suggestedCommand = 'docker compose up' }
   else if (has('Cargo.toml')) { stack = 'rust'; suggestedCommand = 'cargo run' }
   else if (has('go.mod')) { stack = 'go'; suggestedCommand = 'go run .' }
-  else if (has('pyproject.toml') || has('requirements.txt')) { stack = 'python'; suggestedCommand = 'python main.py' }
+  else if (has('pyproject.toml') || has('requirements.txt')) { stack = 'python'; suggestedCommand = detectPythonCommand(dir) }
+  else if (hasPyFiles(dir)) { stack = 'python'; suggestedCommand = detectPythonCommand(dir) }
   else if (has('.git')) { stack = 'unknown'; suggestedCommand = '' }
   else return null
 
@@ -111,6 +132,7 @@ function scanEntry(dir: string): ScannedProject | null {
     inferredPort: detection.inferredPort,
     suggestedCommand: detection.suggestedCommand,
     hasDockerfile: existsSync(join(dir, 'Dockerfile')),
+    hasDockerCompose: existsSync(join(dir, 'docker-compose.yml')) || existsSync(join(dir, 'compose.yml')),
     lastModifiedAt
   }
 }

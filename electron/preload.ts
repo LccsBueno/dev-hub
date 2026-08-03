@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer, type IpcRendererEvent } from 'electron'
-import type { DockerGroup } from '../src/types'
+import type { DockerGroup, RunMode } from '../src/types'
 
 const api = {
   scanProjects: () => ipcRenderer.invoke('projects:scan'),
@@ -10,14 +10,16 @@ const api = {
     ipcRenderer.invoke('config:updateProjectCommand', id, command),
   updateTags: (id: string, tags: string[]) => ipcRenderer.invoke('config:updateTags', id, tags),
   updateNotes: (id: string, notes: string) => ipcRenderer.invoke('config:updateNotes', id, notes),
-  updateRunMode: (id: string, runMode: 'native' | 'docker') =>
-    ipcRenderer.invoke('config:updateRunMode', id, runMode),
+  updateRunMode: (id: string, runMode: RunMode) => ipcRenderer.invoke('config:updateRunMode', id, runMode),
   updatePinned: (id: string, pinned: boolean) => ipcRenderer.invoke('config:updatePinned', id, pinned),
   updateHidden: (id: string, hidden: boolean) => ipcRenderer.invoke('config:updateHidden', id, hidden),
   setTagColor: (tag: string, color: string) => ipcRenderer.invoke('config:setTagColor', tag, color),
   deleteTagColor: (tag: string) => ipcRenderer.invoke('config:deleteTagColor', tag),
   updateDockerGroups: (groups: DockerGroup[]) => ipcRenderer.invoke('config:updateDockerGroups', groups),
-  getGitInfo: (path: string) => ipcRenderer.invoke('git:info', path),
+  getGitInfo: (path: string, opts?: { skip?: number; limit?: number }) =>
+    ipcRenderer.invoke('git:info', path, opts),
+  getGitHead: (path: string) => ipcRenderer.invoke('git:head', path),
+  checkoutGitRef: (path: string, target: string) => ipcRenderer.invoke('git:checkout', path, target),
   checkRootFolders: () => ipcRenderer.invoke('config:checkRoots'),
   pickFolder: () => ipcRenderer.invoke('dialog:pickFolder'),
   getLogBuffer: (id: string) => ipcRenderer.invoke('process:logBuffer', id),
@@ -26,6 +28,7 @@ const api = {
   runProject: (id: string) => ipcRenderer.send('process:run', id),
   stopProject: (id: string) => ipcRenderer.send('process:stop', id),
   openFolder: (path: string) => ipcRenderer.send('open:folder', path),
+  openUrl: (url: string) => ipcRenderer.send('open:url', url),
   openInEditor: (path: string) => ipcRenderer.send('open:editor', path),
   openInTerminal: (path: string) => ipcRenderer.send('open:terminal', path),
 
@@ -62,6 +65,9 @@ const api = {
 
   readDockerCompose: (projectPath: string) => ipcRenderer.invoke('compose:read', projectPath),
   writeDockerCompose: (projectPath: string, content: string) => ipcRenderer.invoke('compose:write', projectPath, content),
+
+  readDockerfile: (projectPath: string) => ipcRenderer.invoke('dockerfile:read', projectPath),
+  writeDockerfile: (projectPath: string, content: string) => ipcRenderer.invoke('dockerfile:write', projectPath, content),
 
   onError: (callback: (message: string) => void) => {
     const handler = (_e: IpcRendererEvent, message: string): void => callback(message)

@@ -6,6 +6,15 @@ export function defaultConfig(): Config {
   return { rootFolders: [], editorCommand: 'code', projects: {}, tagColors: {}, dockerGroups: [] }
 }
 
+function migrateProjects(projects: Record<string, ProjectConfig>): Record<string, ProjectConfig> {
+  for (const project of Object.values(projects)) {
+    // legacy standalone 'compose' runMode collapsed into 'docker' — Docker mode now
+    // auto-detects docker-compose.yml instead of needing a separate toggle
+    if ((project.runMode as string) === 'compose') project.runMode = 'docker'
+  }
+  return projects
+}
+
 export function loadConfig(filePath: string): Config {
   try {
     const parsed = JSON.parse(readFileSync(filePath, 'utf-8'))
@@ -17,7 +26,7 @@ export function loadConfig(filePath: string): Config {
           : 'code',
       projects:
         typeof parsed.projects === 'object' && parsed.projects !== null
-          ? parsed.projects
+          ? migrateProjects(parsed.projects)
           : {},
       tagColors:
         typeof parsed.tagColors === 'object' && parsed.tagColors !== null
@@ -57,7 +66,8 @@ export function mergeProjects(
         tags: prev.tags ?? [],
         notes: prev.notes ?? '',
         hasDockerfile: s.hasDockerfile,
-        runMode: s.hasDockerfile ? (prev.runMode ?? 'native') : 'native',
+        hasDockerCompose: s.hasDockerCompose,
+        runMode: s.hasDockerfile || s.hasDockerCompose ? (prev.runMode ?? 'native') : 'native',
         lastModifiedAt: s.lastModifiedAt
       }
     } else {
@@ -74,6 +84,7 @@ export function mergeProjects(
         tags: [],
         notes: '',
         hasDockerfile: s.hasDockerfile,
+        hasDockerCompose: s.hasDockerCompose,
         runMode: 'native',
         lastModifiedAt: s.lastModifiedAt
       }
@@ -88,7 +99,8 @@ export function mergeProjects(
         tags: p.tags ?? [],
         notes: p.notes ?? '',
         hasDockerfile: p.hasDockerfile ?? false,
-        runMode: p.hasDockerfile ? (p.runMode ?? 'native') : 'native'
+        hasDockerCompose: p.hasDockerCompose ?? false,
+        runMode: (p.hasDockerfile ?? false) || (p.hasDockerCompose ?? false) ? (p.runMode ?? 'native') : 'native'
       }
     }
   }

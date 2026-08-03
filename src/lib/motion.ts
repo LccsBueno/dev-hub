@@ -75,12 +75,17 @@ export function animateViewSwitch(el: HTMLElement): void {
   gsap.fromTo(el, { opacity: 0, y: 6 }, { opacity: 1, y: 0, duration: 0.22, ease: 'power2.out' })
 }
 
-export function animateTabIndicator(indicator: HTMLElement, target: HTMLElement): void {
-  gsap.killTweensOf(indicator)
-  gsap.to(indicator, {
-    left: target.offsetLeft,
-    width: target.offsetWidth,
-    duration: 0.25,
-    ease: 'power2.out'
-  })
+export function animateInfoGridEnter(container: HTMLElement): void {
+  const cards = Array.from(container.children)
+  gsap.killTweensOf(cards)
+  gsap.fromTo(
+    cards,
+    { opacity: 0, scale: 0.97 },
+    { opacity: 1, scale: 1, duration: 0.25, stagger: 0.035, ease: 'power2.out' }
+  )
+}
+
+export function animateStarPop(el: HTMLElement): void {
+  gsap.killTweensOf(el)
+  gsap.fromTo(el, { scale: 1 }, { scale: 1.3, duration: 0.12, ease: 'power2.out', yoyo: true, repeat: 1 })
 }

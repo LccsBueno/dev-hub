@@ -2,6 +2,16 @@ import { useEffect, useRef, useState } from 'react'
 import { ArrowDown, SquareTerminal, Trash2 } from 'lucide-react'
 import type { LogLine } from '../../types'
 
+// eslint-disable-next-line no-control-regex
+const ANSI_RE = /\x1b(?:\[[\d;?]*[A-Za-z]|[^[])/g
+
+function cleanLine(text: string): string {
+  return text
+    .replace(ANSI_RE, '')
+    .replace(/\\U([0-9a-fA-F]{8})/g, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/\\u([0-9a-fA-F]{4})/g, (_, h) => String.fromCodePoint(parseInt(h, 16)))
+}
+
 const MAX_CLIENT_LINES = 2000
 
 interface Props {
@@ -78,7 +88,7 @@ export default function LogsTab({ projectId, projectPath }: Props) {
         ) : (
           lines.map((line, i) => (
             <div key={i} className={line.stream === 'stderr' ? 'text-red-400' : 'text-neutral-300'}>
-              {line.text}
+              {cleanLine(line.text)}
             </div>
           ))
         )}

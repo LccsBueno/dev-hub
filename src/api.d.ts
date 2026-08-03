@@ -1,4 +1,4 @@
-import type { Config, DockerContainerInfo, DockerGroup, DockerMount, GitInfo, LogLine, RootFolderStatus } from './types'
+import type { Config, DockerContainerInfo, DockerGroup, DockerMount, GitInfo, LogLine, RootFolderStatus, RunMode } from './types'
 
 declare global {
   interface Window {
@@ -10,13 +10,15 @@ declare global {
       updateProjectCommand(id: string, command: string): Promise<void>
       updateTags(id: string, tags: string[]): Promise<void>
       updateNotes(id: string, notes: string): Promise<void>
-      updateRunMode(id: string, runMode: 'native' | 'docker'): Promise<void>
+      updateRunMode(id: string, runMode: RunMode): Promise<void>
       updatePinned(id: string, pinned: boolean): Promise<void>
       updateHidden(id: string, hidden: boolean): Promise<void>
       setTagColor(tag: string, color: string): Promise<void>
       deleteTagColor(tag: string): Promise<void>
       updateDockerGroups(groups: DockerGroup[]): Promise<void>
-      getGitInfo(path: string): Promise<GitInfo>
+      getGitInfo(path: string, opts?: { skip?: number; limit?: number }): Promise<GitInfo>
+      getGitHead(path: string): Promise<{ currentBranch: string | null; headFullHash: string | null }>
+      checkoutGitRef(path: string, target: string): Promise<{ ok: boolean }>
       checkRootFolders(): Promise<RootFolderStatus[]>
       pickFolder(): Promise<string | null>
       getLogBuffer(id: string): Promise<LogLine[]>
@@ -25,6 +27,7 @@ declare global {
       runProject(id: string): void
       stopProject(id: string): void
       openFolder(path: string): void
+      openUrl(url: string): void
       openInEditor(path: string): void
       openInTerminal(path: string): void
       onLog(cb: (id: string, chunk: string, stream: 'stdout' | 'stderr') => void): () => void
@@ -42,6 +45,8 @@ declare global {
       dockerRunGroup(groupId: string, action: 'start' | 'stop' | 'restart'): Promise<void>
       readDockerCompose(projectPath: string): Promise<string | null>
       writeDockerCompose(projectPath: string, content: string): Promise<void>
+      readDockerfile(projectPath: string): Promise<string | null>
+      writeDockerfile(projectPath: string, content: string): Promise<void>
       onError(cb: (message: string) => void): () => void
     }
   }

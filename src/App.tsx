@@ -4,6 +4,7 @@ import Sidebar, { type View } from './components/Sidebar'
 import FilterBar from './components/FilterBar'
 import ProjectGrid from './components/ProjectGrid'
 import ProjectDetailPanel from './components/ProjectDetail/ProjectDetailPanel'
+import ErrorBoundary from './components/ErrorBoundary'
 import SettingsPanel from './components/SettingsPanel'
 import DockerView from './components/Docker/DockerView'
 import { ToastProvider } from './components/Toast'
@@ -216,20 +217,22 @@ export default function App() {
               )}
             </div>
           </main>
-          <ProjectDetailPanel
-            projectId={selectedId}
-            projects={config?.projects ?? {}}
-            running={running}
-            tagColors={config?.tagColors ?? {}}
-            allTags={allTags}
-            onClose={closePanel}
-            onCommandChange={updateProjectCommand}
-            onTagsChange={updateTags}
-            onNotesChange={updateNotes}
-            onRunModeChange={updateRunMode}
-            onTogglePinned={updatePinned}
-            onToggleHidden={updateHidden}
-          />
+          <ErrorBoundary resetKey={selectedId} onReset={closePanel}>
+            <ProjectDetailPanel
+              projectId={selectedId}
+              projects={config?.projects ?? {}}
+              running={running}
+              tagColors={config?.tagColors ?? {}}
+              allTags={allTags}
+              onClose={closePanel}
+              onCommandChange={updateProjectCommand}
+              onTagsChange={updateTags}
+              onNotesChange={updateNotes}
+              onRunModeChange={updateRunMode}
+              onTogglePinned={updatePinned}
+              onToggleHidden={updateHidden}
+            />
+          </ErrorBoundary>
         </div>
       </div>
     </ToastProvider>

@@ -71,7 +71,7 @@ export default function ProjectCard({
       onPointerEnter={hoverLift.onPointerEnter}
       onPointerLeave={hoverLift.onPointerLeave}
       onClick={() => onSelect(id)}
-      className={`group relative cursor-pointer rounded-lg border p-5 transition-[background-color,box-shadow] ${
+      className={`group relative flex cursor-pointer flex-col rounded-lg border p-5 transition-[background-color,box-shadow] ${
         running
           ? 'border-accent bg-accent/12 hover:bg-accent/16'
           : 'border-transparent bg-card hover:bg-card-hover'
@@ -153,8 +153,8 @@ export default function ProjectCard({
       )}
 
       {project.runMode === 'docker' ? (
-        <p className="mb-4 truncate rounded-md border border-border bg-bg px-2 py-1.5 font-mono text-xs text-muted">
-          docker build && run
+        <p className="mb-4 mt-auto truncate rounded-md border border-border bg-bg px-2 py-1.5 font-mono text-xs text-muted">
+          {project.hasDockerCompose ? 'docker compose up' : 'docker build && run'}
         </p>
       ) : (
         <input
@@ -164,7 +164,7 @@ export default function ProjectCard({
           onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
           onClick={(e) => e.stopPropagation()}
           placeholder="comando de run…"
-          className="mb-4 w-full rounded-md border border-border bg-bg px-2 py-1.5 font-mono text-xs text-muted outline-none focus:border-accent focus:text-white focus-visible:ring-2 focus-visible:ring-accent/50"
+          className="mb-4 mt-auto w-full rounded-md border border-border bg-bg px-2 py-1.5 font-mono text-xs text-muted outline-none focus:border-accent focus:text-white focus-visible:ring-2 focus-visible:ring-accent/50"
         />
       )}
 
@@ -181,7 +181,9 @@ export default function ProjectCard({
           className={`flex h-8 w-8 items-center justify-center rounded-lg transition-colors focus-visible:ring-2 focus-visible:ring-accent/50 focus-visible:outline-none disabled:opacity-30 ${
             running
               ? 'bg-red-500/15 text-red-400 hover:bg-red-500/25'
-              : 'bg-accent/15 text-accent hover:bg-accent/25'
+              : project.runMode === 'docker' && project.hasDockerCompose
+                ? 'bg-sky-500/15 text-sky-400 hover:bg-sky-500/25'
+                : 'bg-accent/15 text-accent hover:bg-accent/25'
           }`}
         >
           {running ? <Square size={14} /> : <Play size={14} />}

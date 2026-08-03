@@ -56,6 +56,7 @@ describe('loadConfig', () => {
           tags: ['tooling'],
           notes: 'test notes',
           hasDockerfile: true,
+          hasDockerCompose: false,
           runMode: 'docker'
         }
       },
@@ -66,6 +67,39 @@ describe('loadConfig', () => {
     expect(loadConfig(file)).toEqual(cfg)
     // saved file is pretty-printed JSON
     expect(readFileSync(file, 'utf-8')).toContain('\n')
+  })
+})
+
+describe('loadConfig legacy compose migration', () => {
+  it('migrates a legacy standalone "compose" runMode to "docker"', () => {
+    writeFileSync(
+      file,
+      JSON.stringify({
+        rootFolders: [],
+        editorCommand: 'code',
+        projects: {
+          id1: {
+            name: 'demo',
+            path: 'C:\\dev\\demo',
+            stack: 'node',
+            framework: 'node',
+            inferredPort: 3000,
+            runCommand: 'npm run dev',
+            pinned: false,
+            hidden: false,
+            tags: [],
+            notes: '',
+            hasDockerfile: false,
+            hasDockerCompose: true,
+            runMode: 'compose'
+          }
+        },
+        tagColors: {}
+      }),
+      'utf-8'
+    )
+    const cfg = loadConfig(file)
+    expect(cfg.projects.id1.runMode).toBe('docker')
   })
 })
 
@@ -106,6 +140,7 @@ describe('mergeProjects', () => {
     inferredPort: 3000,
     suggestedCommand: 'npm run dev',
     hasDockerfile: false,
+    hasDockerCompose: false,
     lastModifiedAt: 1700000000000
   }
 
@@ -124,6 +159,7 @@ describe('mergeProjects', () => {
       tags: [],
       notes: '',
       hasDockerfile: false,
+      hasDockerCompose: false,
       runMode: 'native',
       lastModifiedAt: 1700000000000
     })
@@ -143,6 +179,7 @@ describe('mergeProjects', () => {
         tags: ['client-x'],
         notes: 'important',
         hasDockerfile: false,
+        hasDockerCompose: false,
         runMode: 'native'
       }
     }
@@ -166,6 +203,7 @@ describe('mergeProjects', () => {
         tags: [],
         notes: '',
         hasDockerfile: false,
+        hasDockerCompose: false,
         runMode: 'native'
       }
     }
@@ -189,6 +227,7 @@ describe('mergeProjects', () => {
         tags: [],
         notes: '',
         hasDockerfile: false,
+        hasDockerCompose: false,
         runMode: 'native'
       }
     }
@@ -211,6 +250,7 @@ describe('mergeProjects', () => {
         tags: ['scraper', 'client-x'],
         notes: 'remember to update the .env file',
         hasDockerfile: false,
+        hasDockerCompose: false,
         runMode: 'native'
       }
     }
@@ -269,6 +309,7 @@ describe('mergeProjects', () => {
         tags: [],
         notes: '',
         hasDockerfile: true,
+        hasDockerCompose: false,
         runMode: 'docker'
       }
     }
@@ -291,6 +332,7 @@ describe('mergeProjects', () => {
         tags: [],
         notes: '',
         hasDockerfile: true,
+        hasDockerCompose: false,
         runMode: 'docker'
       }
     }
@@ -313,6 +355,7 @@ describe('mergeProjects', () => {
         tags: [],
         notes: '',
         hasDockerfile: false,
+        hasDockerCompose: false,
         runMode: 'docker'
       }
     }
@@ -335,6 +378,52 @@ describe('mergeProjects', () => {
     expect(merged['id1'].runMode).toBe('native')
   })
 
+  it('preserves docker runMode across rescans when only docker-compose.yml is present (no Dockerfile)', () => {
+    const existing: Record<string, ProjectConfig> = {
+      id1: {
+        name: 'demo',
+        path: 'C:\\dev\\demo',
+        stack: 'node',
+        framework: 'node',
+        inferredPort: 3000,
+        runCommand: 'npm run dev',
+        pinned: false,
+        hidden: false,
+        tags: [],
+        notes: '',
+        hasDockerfile: false,
+        hasDockerCompose: true,
+        runMode: 'docker'
+      }
+    }
+    const scannedWithCompose: ScannedProject = { ...scannedDemo, hasDockerCompose: true }
+    const merged = mergeProjects(existing, [scannedWithCompose])
+    expect(merged['id1'].runMode).toBe('docker')
+  })
+
+  it('forces runMode back to native when both Dockerfile and docker-compose.yml disappear on rescan', () => {
+    const existing: Record<string, ProjectConfig> = {
+      id1: {
+        name: 'demo',
+        path: 'C:\\dev\\demo',
+        stack: 'node',
+        framework: 'node',
+        inferredPort: 3000,
+        runCommand: 'npm run dev',
+        pinned: false,
+        hidden: false,
+        tags: [],
+        notes: '',
+        hasDockerfile: false,
+        hasDockerCompose: true,
+        runMode: 'docker'
+      }
+    }
+    const merged = mergeProjects(existing, [scannedDemo])
+    expect(merged['id1'].hasDockerCompose).toBe(false)
+    expect(merged['id1'].runMode).toBe('native')
+  })
+
   it('never auto-switches a project into docker mode just because a Dockerfile is present', () => {
     const existing: Record<string, ProjectConfig> = {
       id1: {
@@ -349,6 +438,7 @@ describe('mergeProjects', () => {
         tags: [],
         notes: '',
         hasDockerfile: false,
+        hasDockerCompose: false,
         runMode: 'native'
       }
     }
@@ -384,6 +474,7 @@ describe('framework + inferredPort propagation in mergeProjects', () => {
       inferredPort: 3000,
       suggestedCommand: 'npm run dev',
       hasDockerfile: false,
+      hasDockerCompose: false,
       lastModifiedAt: 1700000000000
     }
     const merged = mergeProjects({}, [scannedDemo])
@@ -401,6 +492,7 @@ describe('framework + inferredPort propagation in mergeProjects', () => {
       inferredPort: 3000,
       suggestedCommand: 'npm run dev',
       hasDockerfile: false,
+      hasDockerCompose: false,
       lastModifiedAt: 1700000000000
     }
     const existing: Record<string, ProjectConfig> = {
@@ -416,6 +508,7 @@ describe('framework + inferredPort propagation in mergeProjects', () => {
         tags: [],
         notes: '',
         hasDockerfile: false,
+        hasDockerCompose: false,
         runMode: 'native'
       }
     }
@@ -433,6 +526,7 @@ describe('framework + inferredPort propagation in mergeProjects', () => {
       inferredPort: 3000,
       suggestedCommand: 'npm run dev',
       hasDockerfile: false,
+      hasDockerCompose: false,
       lastModifiedAt: 1700000000000
     }
     const existing: Record<string, ProjectConfig> = {
@@ -448,6 +542,7 @@ describe('framework + inferredPort propagation in mergeProjects', () => {
         tags: [],
         notes: '',
         hasDockerfile: false,
+        hasDockerCompose: false,
         runMode: 'native'
       }
     }

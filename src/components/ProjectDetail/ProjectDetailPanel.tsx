@@ -1,13 +1,29 @@
 import React, { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { AlertTriangle, Archive, Code2, Folder, Play, Square, Star, Terminal, X } from 'lucide-react'
+import {
+  AlertTriangle,
+  Archive,
+  Code2,
+  Container,
+  FileText,
+  Folder,
+  GitBranch,
+  Info,
+  Play,
+  Square,
+  Star,
+  Terminal,
+  Workflow,
+  X
+} from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import type { ProjectConfig, RunMode } from '../../types'
 import { frameworkTechs, stackColors, stackTechs } from '../../lib/stackColors'
 import {
   animateDetailPanelEnter,
   animateDetailPanelExit,
+  animateStarPop,
   animateTabContent,
-  animateTabIndicator,
   usePressAnimation
 } from '../../lib/motion'
 import InfoTab from './InfoTab'
@@ -20,13 +36,13 @@ const DockerTab = React.lazy(() => import('./DockerTab'))
 
 type TabId = 'info' | 'notes' | 'git' | 'logs' | 'arch' | 'docker'
 
-const tabs: { id: TabId; label: string }[] = [
-  { id: 'info', label: 'Info' },
-  { id: 'notes', label: 'Notas' },
-  { id: 'git', label: 'Git' },
-  { id: 'logs', label: 'Logs' },
-  { id: 'arch', label: 'Arq.' },
-  { id: 'docker', label: 'Docker' }
+const tabs: { id: TabId; label: string; icon: LucideIcon }[] = [
+  { id: 'info', label: 'Info', icon: Info },
+  { id: 'notes', label: 'Notas', icon: FileText },
+  { id: 'git', label: 'Git', icon: GitBranch },
+  { id: 'logs', label: 'Logs', icon: Terminal },
+  { id: 'arch', label: 'Arq.', icon: Workflow },
+  { id: 'docker', label: 'Docker', icon: Container }
 ]
 
 interface Props {
@@ -76,8 +92,6 @@ export default function ProjectDetailPanel({
   const [mountedId, setMountedId] = useState<string | null>(null)
   const [panelWidth, setPanelWidth] = useState(336)
   const asideRef = useRef<HTMLElement>(null)
-  const tabBarRef = useRef<HTMLDivElement>(null)
-  const tabIndicatorRef = useRef<HTMLSpanElement>(null)
   const closeBtn = usePressAnimation<HTMLButtonElement>()
   const starBtn = usePressAnimation<HTMLButtonElement>()
   const archiveBtn = usePressAnimation<HTMLButtonElement>()
@@ -89,12 +103,6 @@ export default function ProjectDetailPanel({
   useEffect(() => {
     setActiveTab('info')
   }, [projectId])
-
-  useEffect(() => {
-    if (!tabBarRef.current || !tabIndicatorRef.current) return
-    const target = tabBarRef.current.querySelector<HTMLElement>(`[data-tab="${activeTab}"]`)
-    if (target) animateTabIndicator(tabIndicatorRef.current, target)
-  }, [activeTab, mountedId])
 
   useEffect(() => {
     if (projectId && !projects[projectId]) onClose()
@@ -179,7 +187,10 @@ export default function ProjectDetailPanel({
               onPointerDown={starBtn.onPointerDown}
               onPointerUp={starBtn.onPointerUp}
               onPointerLeave={starBtn.onPointerLeave}
-              onClick={() => onTogglePinned(mountedId, !project.pinned)}
+              onClick={() => {
+                if (!project.pinned && starBtn.ref.current) animateStarPop(starBtn.ref.current)
+                onTogglePinned(mountedId, !project.pinned)
+              }}
               title={project.pinned ? 'Remover dos favoritos' : 'Favoritar'}
               aria-pressed={project.pinned}
               type="button"
@@ -261,7 +272,9 @@ export default function ProjectDetailPanel({
             className={`flex flex-col items-center gap-1 rounded-lg px-2 py-2.5 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 disabled:opacity-30 ${
               isRunning
                 ? 'bg-red-500/15 text-red-400 hover:bg-red-500/25'
-                : 'bg-accent/15 text-accent hover:bg-accent/25'
+                : project.runMode === 'docker' && project.hasDockerCompose
+                  ? 'bg-sky-500/15 text-sky-400 hover:bg-sky-500/25'
+                  : 'bg-accent/15 text-accent hover:bg-accent/25'
             }`}
           >
             {isRunning ? <Square size={16} /> : <Play size={16} />}
@@ -310,21 +323,25 @@ export default function ProjectDetailPanel({
         </div>
       </div>
 
-      <div ref={tabBarRef} className="relative flex border-b border-border px-5">
-        <span ref={tabIndicatorRef} className="absolute bottom-0 h-0.5 bg-accent" style={{ left: 0, width: 0 }} />
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            data-tab={tab.id}
-            type="button"
-            onClick={() => setActiveTab(tab.id)}
-            className={`px-3 py-3 text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ${
-              activeTab === tab.id ? 'text-white' : 'text-muted hover:text-white'
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="mx-5 mt-3 mb-3 flex gap-1 rounded-xl bg-card p-1">
+        {tabs.map((tab) => {
+          const Icon = tab.icon
+          return (
+            <button
+              key={tab.id}
+              type="button"
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex flex-1 flex-col items-center justify-center gap-1 rounded-lg px-1 py-2 text-[10px] font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ${
+                activeTab === tab.id
+                  ? 'bg-bg text-accent shadow-[0_2px_8px_rgba(0,0,0,0.4)] ring-1 ring-border'
+                  : 'text-muted hover:text-white'
+              }`}
+            >
+              <Icon size={13} />
+              {tab.label}
+            </button>
+          )
+        })}
       </div>
 
       <TabContent key={`${mountedId}:${activeTab}`} tabId={activeTab} scrollable={activeTab !== 'arch' && activeTab !== 'docker'}>
@@ -332,6 +349,7 @@ export default function ProjectDetailPanel({
           <InfoTab
             projectId={mountedId}
             project={project}
+            isRunning={isRunning}
             allTags={allTags}
             tagColors={tagColors}
             onCommandChange={onCommandChange}

@@ -44,6 +44,7 @@ export interface ProjectConfig {
   tags: string[]
   notes: string
   hasDockerfile: boolean
+  hasDockerCompose: boolean
   runMode: RunMode
 }
 
@@ -64,6 +65,7 @@ export interface ScannedProject {
   inferredPort: number
   suggestedCommand: string
   hasDockerfile: boolean
+  hasDockerCompose: boolean
   lastModifiedAt: number
 }
 
@@ -114,6 +116,9 @@ export interface RootFolderStatus {
 
 export interface GitCommit {
   hash: string
+  fullHash: string
+  parents: string[]
+  refs: string[]
   message: string
   author: string
   relativeDate: string
@@ -122,8 +127,17 @@ export interface GitCommit {
 export interface GitInfo {
   isRepo: boolean
   currentBranch: string | null
+  headFullHash: string | null
   branches: string[]
   commits: GitCommit[]
+  hasMore: boolean
 }
 
-export const emptyGitInfo: GitInfo = { isRepo: false, currentBranch: null, branches: [], commits: [] }
+export const emptyGitInfo: GitInfo = {
+  isRepo: false,
+  currentBranch: null,
+  headFullHash: null,
+  branches: [],
+  commits: [],
+  hasMore: false
+}

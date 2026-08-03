@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { generateComposeTemplate } from '../src/lib/composeTemplate'
+import { generateComposeTemplate, parseComposeHostPort } from '../src/lib/composeTemplate'
 import type { ProjectConfig } from '../src/types'
 
 function makeProject(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
@@ -15,6 +15,7 @@ function makeProject(overrides: Partial<ProjectConfig> = {}): ProjectConfig {
     tags: [],
     notes: '',
     hasDockerfile: false,
+    hasDockerCompose: false,
     runMode: 'native',
     ...overrides
   }
@@ -82,5 +83,31 @@ describe('generateComposeTemplate', () => {
     const result = generateComposeTemplate(makeProject())
     expect(result).toContain('build: .')
     expect(result).toContain('restart: unless-stopped')
+  })
+})
+
+describe('parseComposeHostPort', () => {
+  it('extracts host port from quoted mapping', () => {
+    const content = generateComposeTemplate(makeProject({ framework: 'nestjs', inferredPort: 3000 }))
+    expect(parseComposeHostPort(content)).toBe(3000)
+  })
+
+  it('picks up an edited host port', () => {
+    const content = 'services:\n  app:\n    build: .\n    ports:\n      - "9090:3000"\n    restart: unless-stopped\n'
+    expect(parseComposeHostPort(content)).toBe(9090)
+  })
+
+  it('handles unquoted port mapping', () => {
+    const content = 'services:\n  app:\n    ports:\n      - 8081:80\n'
+    expect(parseComposeHostPort(content)).toBe(8081)
+  })
+
+  it('returns null when there is no ports section', () => {
+    const content = 'services:\n  app:\n    build: .\n    restart: unless-stopped\n'
+    expect(parseComposeHostPort(content)).toBeNull()
+  })
+
+  it('returns null for empty content', () => {
+    expect(parseComposeHostPort('')).toBeNull()
   })
 })

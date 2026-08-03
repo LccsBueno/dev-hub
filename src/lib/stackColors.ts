@@ -41,3 +41,15 @@ export const frameworkTechs: Partial<Record<Framework, { label: string; color: s
   compose:        [{ label: 'Docker', color: '#38bdf8' }],
   unknown:        []
 }
+
+export function techList(framework: Framework, stack: Stack): { label: string; color: string }[] {
+  return (
+    frameworkTechs[framework] ??
+    stackTechs[stack] ?? [{ label: stack, color: stackColors[stack] ?? '#94a3b8' }]
+  )
+}
+
+/** Like techList, but always returns a single valid entry — safe when the list is empty (e.g. unknown stack). */
+export function primaryTech(framework: Framework, stack: Stack): { label: string; color: string } {
+  return techList(framework, stack)[0] ?? { label: stack, color: stackColors[stack] ?? '#94a3b8' }
+}

@@ -9,6 +9,23 @@ function portsSection(port: number): string {
   return `    ports:\n      - "${port}:${port}"\n`
 }
 
+export function parseComposeHostPort(content: string): number | null {
+  const lines = content.split('\n')
+  const portsIndex = lines.findIndex((line) => /^\s*ports:\s*$/.test(line))
+  if (portsIndex === -1) return null
+
+  for (let i = portsIndex + 1; i < lines.length; i++) {
+    const line = lines[i]
+    if (/^\s*-\s*['"]?\d+:\d+/.test(line)) {
+      const match = line.match(/(\d+):\d+/)
+      if (match) return Number(match[1])
+    } else if (/^\s*\S/.test(line) && !/^\s*-/.test(line)) {
+      break
+    }
+  }
+  return null
+}
+
 export function generateComposeTemplate(project: ProjectConfig): string {
   const name = containerName(project.name)
   const port = project.inferredPort
@@ -27,8 +44,11 @@ export function generateComposeTemplate(project: ProjectConfig): string {
     case 'nextjs':
       return nodeBase('      - NEXT_TELEMETRY_DISABLED=1\n')
 
-    case 'vite-react':
-      return nodeBase()
+    case 'vite-react': {
+      const hostPort = port || 80
+      const staticPorts = `    ports:\n      - "${hostPort}:80"\n`
+      return `services:\n  app:\n    build: .\n    container_name: ${name}\n${staticPorts}    restart: unless-stopped\n`
+    }
 
     case 'fastapi': {
       const fastapiPort = port || 8000

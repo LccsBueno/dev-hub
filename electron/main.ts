@@ -5,7 +5,7 @@ import { spawn } from 'child_process'
 import { loadConfig, saveConfig, mergeProjects } from './configStore'
 import { scanRoots } from './scanner'
 import { ProcessManager } from './processManager'
-import { getGitInfo, emptyGitInfo } from './gitInfo'
+import { getGitInfo, getGitHead, checkoutRef, emptyGitInfo } from './gitInfo'
 import { armStopFallback, clearStopFallback, stopContainer } from './docker'
 import { getContainerMounts, listContainers, restartContainer, startContainer } from './dockerInspect'
 import { dockerContainerName, dockerRunCommand } from '../src/lib/dockerCommand'
@@ -115,8 +115,8 @@ function registerIpc(): void {
     const cfg = loadConfig(configPath())
     const project = cfg.projects[id]
     if (!project) return
-    if (runMode === 'docker' && !project.hasDockerfile) {
-      sendError(`"${project.name}" não tem Dockerfile — não é possível ativar o modo Docker.`)
+    if (runMode === 'docker' && !project.hasDockerfile && !project.hasDockerCompose) {
+      sendError(`"${project.name}" não tem Dockerfile nem docker-compose.yml — não é possível ativar o modo Docker.`)
       return
     }
     project.runMode = runMode
@@ -207,9 +207,40 @@ function registerIpc(): void {
     }
   })
 
-  ipcMain.handle('git:info', (_e, path: string) => {
+  ipcMain.handle('dockerfile:read', (_e, projectPath: string) => {
+    if (!isKnownProjectPath(projectPath)) return null
+    const file = join(projectPath, 'Dockerfile')
+    try {
+      return existsSync(file) ? readFileSync(file, 'utf-8') : null
+    } catch {
+      return null
+    }
+  })
+
+  ipcMain.handle('dockerfile:write', (_e, projectPath: string, content: string) => {
+    if (!isKnownProjectPath(projectPath)) return
+    try {
+      writeFileSync(join(projectPath, 'Dockerfile'), content, 'utf-8')
+    } catch (err) {
+      console.error('[dockerfile:write] failed:', err)
+    }
+  })
+
+  ipcMain.handle('git:info', (_e, path: string, opts?: { skip?: number; limit?: number }) => {
     if (!isKnownProjectPath(path)) return emptyGitInfo
-    return getGitInfo(path)
+    return getGitInfo(path, opts)
+  })
+
+  ipcMain.handle('git:head', (_e, path: string) => {
+    if (!isKnownProjectPath(path)) return { currentBranch: null, headFullHash: null }
+    return getGitHead(path)
+  })
+
+  ipcMain.handle('git:checkout', async (_e, path: string, target: string) => {
+    if (!isKnownProjectPath(path)) return { ok: false }
+    const result = await checkoutRef(path, target)
+    if (!result.ok) sendError(`Checkout falhou: ${result.error}`)
+    return { ok: result.ok }
   })
 
   ipcMain.handle('config:checkRoots', () => {
@@ -236,7 +267,8 @@ function registerIpc(): void {
     if (project.runMode === 'docker') {
       project.lastRunAt = new Date().toISOString()
       saveConfig(configPath(), cfg)
-      pm.run(id, dockerRunCommand(project.path, id), project.path)
+      const command = project.hasDockerCompose ? 'docker compose up' : dockerRunCommand(project, id)
+      pm.run(id, command, project.path)
       return
     }
 
@@ -252,13 +284,32 @@ function registerIpc(): void {
   ipcMain.on('process:stop', (_e, id: string) => {
     const cfg = loadConfig(configPath())
     const project = cfg.projects[id]
+    if (project?.runMode === 'docker' && project.hasDockerCompose) {
+      const composeDown =
+        process.platform === 'win32'
+          ? spawn('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', 'docker compose down'], { cwd: project.path })
+          : spawn('docker', ['compose', 'down'], { cwd: project.path, shell: false })
+      composeDown.on('error', () => { /* docker not available */ })
+      armStopFallback(
+        id,
+        () => {
+          if (pm.isRunning(id)) pm.stop(id)
+        },
+        30000
+      )
+      composeDown.on('exit', () => {
+        if (pm.isRunning(id)) pm.stop(id)
+      })
+      return
+    }
     if (project?.runMode === 'docker') {
-      stopContainer(dockerContainerName(id))
+      const containerName = dockerContainerName(project.name)
+      stopContainer(containerName)
       armStopFallback(
         id,
         () => {
           if (pm.isRunning(id)) {
-            stopContainer(dockerContainerName(id))
+            stopContainer(containerName)
             pm.stop(id)
           }
         },
@@ -272,6 +323,13 @@ function registerIpc(): void {
   ipcMain.on('open:folder', (_e, path: string) => {
     if (!isKnownProjectPath(path)) return
     shell.openPath(path)
+  })
+
+  ipcMain.on('open:url', (_e, url: string) => {
+    const parsed = new URL(url)
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      shell.openExternal(url)
+    }
   })
 
   ipcMain.on('open:editor', (_e, path: string) => {
@@ -368,6 +426,11 @@ function registerIpc(): void {
 
   pm.onLog((id, chunk, stream) => sendToRenderer('process:log', id, chunk, stream))
   pm.onStatus((id, status) => sendToRenderer('process:status', id, status))
+  pm.onError((id, message) => {
+    const cfg = loadConfig(configPath())
+    const name = cfg.projects[id]?.name ?? id
+    sendError(`"${name}": ${message}`)
+  })
 }
 
 app.whenReady().then(() => {
@@ -378,8 +441,11 @@ app.whenReady().then(() => {
 app.on('before-quit', () => {
   const cfg = loadConfig(configPath())
   for (const id of pm.runningIds()) {
-    if (cfg.projects[id]?.runMode === 'docker') {
-      stopContainer(dockerContainerName(id))
+    const project = cfg.projects[id]
+    if (project?.runMode === 'docker' && project.hasDockerCompose) {
+      spawn('docker', ['compose', 'down'], { cwd: project.path, shell: false })
+    } else if (project?.runMode === 'docker') {
+      stopContainer(dockerContainerName(project.name))
     }
   }
   pm.stopAll()
