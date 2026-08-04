@@ -67,7 +67,7 @@ Antes de começar, você precisa ter instalado:
 ```bash
 # Clone o repositório
 git clone https://github.com/LccsBueno/dev-hub.git
-cd devhub
+cd dev-hub
 
 # Instale as dependências
 npm install
