@@ -44,6 +44,7 @@ function createWindow(): void {
     minWidth: 1040,
     minHeight: 600,
     backgroundColor: '#252525',
+    icon: join(__dirname, '../../resources/icon.png'),
     autoHideMenuBar: true,
     titleBarStyle: 'hidden',
     titleBarOverlay: {

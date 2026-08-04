@@ -1,4 +1,4 @@
-# 🗂️ Project Manager
+# 🗂️ DevHub
 
 > Um hub desktop para listar, rodar, monitorar e organizar todos os seus projetos locais em um só lugar.
 
@@ -6,7 +6,7 @@
 
 ## 🚀 Sobre o projeto
 
-Project Manager é uma aplicação desktop (Electron) que escaneia pastas raiz configuradas, descobre seus projetos automaticamente e centraliza as tarefas do dia a dia de um dev: rodar/parar o projeto, abrir no editor ou terminal, inspecionar Git, gerenciar containers Docker e até esboçar a arquitetura do sistema em um canvas. Ideal para quem tem dezenas de repositórios locais e quer parar de caçar pastas e comandos espalhados.
+DevHub é uma aplicação desktop (Electron) que escaneia pastas raiz configuradas, descobre seus projetos automaticamente e centraliza as tarefas do dia a dia de um dev: rodar/parar o projeto, abrir no editor ou terminal, inspecionar Git, gerenciar containers Docker e até esboçar a arquitetura do sistema em um canvas. Ideal para quem tem dezenas de repositórios locais e quer parar de caçar pastas e comandos espalhados.
 
 ---
 
@@ -66,8 +66,8 @@ Antes de começar, você precisa ter instalado:
 
 ```bash
 # Clone o repositório
-git clone <url-do-repo>
-cd project-manager
+git clone https://github.com/LccsBueno/dev-hub.git
+cd devhub
 
 # Instale as dependências
 npm install
@@ -89,7 +89,7 @@ npm run test    # roda a suíte de testes (vitest)
 ## 📁 Estrutura do projeto (resumo)
 
 ```
-project-manager/
+devhub/
 ├── electron/          # Processo principal (IPC, scanner, docker, git, processos)
 ├── src/
 │   ├── components/    # UI (ProjectDetail, Docker, etc.)

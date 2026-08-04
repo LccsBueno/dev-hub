@@ -179,10 +179,8 @@ export default function Sidebar({
   return (
     <aside className="flex w-[214px] shrink-0 flex-col border-r border-border bg-bg px-3 py-4">
       <div className="mb-6 flex items-center gap-2 px-2">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent text-sm font-bold text-bg">
-          P
-        </div>
-        <span className="text-base font-medium">Projetos</span>
+        <img src="/favicon.png" alt="DevHub" className="h-8 w-8 rounded-lg object-cover" />
+        <span className="text-base font-medium">DevHub</span>
       </div>
 
       <nav className="mb-6 flex flex-col gap-1">

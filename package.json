@@ -1,5 +1,5 @@
 {
-  "name": "project-manager",
+  "name": "devhub",
   "version": "0.1.0",
   "private": true,
   "description": "Local project manager — list, run and open your projects",
@@ -9,6 +9,21 @@
     "build": "electron-vite build",
     "test": "vitest run",
     "dist": "electron-builder"
+  },
+  "build": {
+    "appId": "com.devhub.projectmanager",
+    "productName": "DevHub",
+    "directories": {
+      "output": "dist",
+      "buildResources": "resources"
+    },
+    "files": [
+      "out/**/*"
+    ],
+    "win": {
+      "icon": "resources/icon.png",
+      "target": "nsis"
+    }
   },
   "dependencies": {
     "@excalidraw/excalidraw": "^0.18.1",
